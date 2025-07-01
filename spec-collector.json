@@ -1,0 +1,607 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Smart Home Technologies API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Сервер для локальной разработки"
+    }
+  ],
+  "tags": [
+    {
+      "name": "events",
+      "description": "API для передачи событий от датчиков и хабов"
+    }
+  ],
+  "paths": {
+    "/events/sensors": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Обработчик событий датчиков",
+        "description": "Эндпоинт для обработки событий от датчиков",
+        "operationId": "collectSensorEvent",
+        "requestBody": {
+          "description": "Данные события датчика (показания, изменение состояния и т.д)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ClimateSensorEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/LightSensorEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MotionSensorEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SwitchSensorEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TemperatureSensorEvent"
+                  }
+                ]
+              },
+              "examples": {
+                "LightSensorEvent": {
+                  "description": "Показания датчика освещённости",
+                  "value": {
+                    "id": "sensor.light.3",
+                    "hubId": "hub-2",
+                    "timestamp": "2024-08-06T16:54:03.129Z",
+                    "type": "LIGHT_SENSOR_EVENT",
+                    "linkQuality": 75,
+                    "luminosity": 59
+                  }
+                },
+                "SwitchSensorEvent": {
+                  "description": "Событие изменения состояния переключателя",
+                  "value": {
+                    "id": "sensor.switch.4356",
+                    "hubId": "hub-1",
+                    "timestamp": "2024-08-06T17:54:03.129Z",
+                    "type": "SWITCH_SENSOR_EVENT",
+                    "state": true
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/events/hubs": {
+      "post": {
+        "tags": [
+          "events"
+        ],
+        "summary": "Обработчик событий хабов",
+        "description": "Эндпоинт для обработки событий от хаба",
+        "operationId": "collectHubEvent",
+        "requestBody": {
+          "description": "Данные события хаба (регистрация/удаление устройств в хабе, добавление/удаление сценария умного дома)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/DeviceAddedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DeviceRemovedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ScenarioAddedEvent"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ScenarioRemovedEvent"
+                  }
+                ]
+              },
+              "examples": {
+                "DeviceAddedEvent": {
+                  "description": "Событие регистрации нового датчика освещенности в хабе пользователя",
+                  "value": {
+                    "hubId": "hub.12345",
+                    "timestamp": "2024-08-06T15:11:24.157Z",
+                    "type": "DEVICE_ADDED",
+                    "id": "sensor.light.3",
+                    "deviceType": "MOTION_SENSOR"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClimateSensorEvent": {
+        "required": [
+          "co2Level",
+          "hubId",
+          "humidity",
+          "id",
+          "temperatureC",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор события датчика."
+          },
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанного с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "description": "Уровень температуры по шкале Цельсия.",
+            "format": "int32"
+          },
+          "humidity": {
+            "type": "integer",
+            "description": "Влажность.",
+            "format": "int32"
+          },
+          "co2Level": {
+            "type": "integer",
+            "description": "Уровень CO2.",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий датчиков. Определяет различные типы событий, которые могут быть связаны с датчиками.",
+            "enum": [
+              "MOTION_SENSOR_EVENT",
+              "TEMPERATURE_SENSOR_EVENT",
+              "LIGHT_SENSOR_EVENT",
+              "CLIMATE_SENSOR_EVENT",
+              "SWITCH_SENSOR_EVENT"
+            ]
+          }
+        },
+        "description": "Событие климатического датчика, содержащее информацию о температуре, влажности и уровне CO2."
+      },
+      "LightSensorEvent": {
+        "required": [
+          "hubId",
+          "id",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор события датчика."
+          },
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанного с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "linkQuality": {
+            "type": "integer",
+            "description": "Качество связи.",
+            "format": "int32"
+          },
+          "luminosity": {
+            "type": "integer",
+            "description": "Уровень освещенности.",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий датчиков. Определяет различные типы событий, которые могут быть связаны с датчиками.",
+            "enum": [
+              "MOTION_SENSOR_EVENT",
+              "TEMPERATURE_SENSOR_EVENT",
+              "LIGHT_SENSOR_EVENT",
+              "CLIMATE_SENSOR_EVENT",
+              "SWITCH_SENSOR_EVENT"
+            ]
+          }
+        },
+        "description": "Событие датчика освещенности, содержащее информацию о качестве связи и уровне освещенности."
+      },
+      "MotionSensorEvent": {
+        "required": [
+          "hubId",
+          "id",
+          "linkQuality",
+          "motion",
+          "type",
+          "voltage"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор события датчика."
+          },
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанного с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "linkQuality": {
+            "type": "integer",
+            "description": "Качество связи.",
+            "format": "int32"
+          },
+          "motion": {
+            "type": "boolean",
+            "description": "Наличие/отсутствие движения."
+          },
+          "voltage": {
+            "type": "integer",
+            "description": "Напряжение.",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий датчиков. Определяет различные типы событий, которые могут быть связаны с датчиками.",
+            "enum": [
+              "MOTION_SENSOR_EVENT",
+              "TEMPERATURE_SENSOR_EVENT",
+              "LIGHT_SENSOR_EVENT",
+              "CLIMATE_SENSOR_EVENT",
+              "SWITCH_SENSOR_EVENT"
+            ]
+          }
+        },
+        "description": "Событие датчика движения."
+      },
+      "SwitchSensorEvent": {
+        "required": [
+          "hubId",
+          "id",
+          "state",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор события датчика."
+          },
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанного с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "state": {
+            "type": "boolean",
+            "description": "Текущее состояние переключателя. true - включен, false - выключен."
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий датчиков. Определяет различные типы событий, которые могут быть связаны с датчиками.",
+            "enum": [
+              "MOTION_SENSOR_EVENT",
+              "TEMPERATURE_SENSOR_EVENT",
+              "LIGHT_SENSOR_EVENT",
+              "CLIMATE_SENSOR_EVENT",
+              "SWITCH_SENSOR_EVENT"
+            ]
+          }
+        },
+        "description": "Событие датчика переключателя, содержащее информацию о текущем состоянии переключателя."
+      },
+      "TemperatureSensorEvent": {
+        "required": [
+          "hubId",
+          "id",
+          "temperatureC",
+          "temperatureF",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор события датчика."
+          },
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанного с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "description": "Температура в градусах Цельсия.",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "description": "Температура в градусах Фаренгейта.",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий датчиков. Определяет различные типы событий, которые могут быть связаны с датчиками.",
+            "enum": [
+              "MOTION_SENSOR_EVENT",
+              "TEMPERATURE_SENSOR_EVENT",
+              "LIGHT_SENSOR_EVENT",
+              "CLIMATE_SENSOR_EVENT",
+              "SWITCH_SENSOR_EVENT"
+            ]
+          }
+        },
+        "description": "Событие датчика температуры, содержащее информацию о температуре в градусах Цельсия и Фаренгейта."
+      },
+      "DeviceAddedEvent": {
+        "required": [
+          "deviceType",
+          "hubId",
+          "id",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанный с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "description": "Идентификатор добавленного устройства."
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "Перечисление типов устройств, которые могут быть добавлены в систему.",
+            "enum": [
+              "MOTION_SENSOR",
+              "TEMPERATURE_SENSOR",
+              "LIGHT_SENSOR",
+              "CLIMATE_SENSOR",
+              "SWITCH_SENSOR"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий хаба.",
+            "enum": [
+              "DEVICE_ADDED",
+              "DEVICE_REMOVED",
+              "SCENARIO_ADDED",
+              "SCENARIO_REMOVED"
+            ]
+          }
+        },
+        "description": "Событие, сигнализирующее о добавлении нового устройства в систему."
+      },
+      "DeviceRemovedEvent": {
+        "required": [
+          "hubId",
+          "id",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанный с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "description": "Идентификатор удаленного устройства."
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий хаба.",
+            "enum": [
+              "DEVICE_ADDED",
+              "DEVICE_REMOVED",
+              "SCENARIO_ADDED",
+              "SCENARIO_REMOVED"
+            ]
+          }
+        },
+        "description": "Событие, сигнализирующее о удалении устройства из системы."
+      },
+      "DeviceAction": {
+        "type": "object",
+        "properties": {
+          "sensorId": {
+            "type": "string",
+            "description": "Идентификатор датчика, связанного с действием."
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление возможных типов действий при срабатывании условия активации сценария.",
+            "enum": [
+              "ACTIVATE",
+              "DEACTIVATE",
+              "INVERSE",
+              "SET_VALUE"
+            ]
+          },
+          "value": {
+            "type": "integer",
+            "description": "Необязательное значение, связанное с действием.",
+            "format": "int32"
+          }
+        },
+        "description": "Представляет действие, которое должно быть выполнено устройством."
+      },
+      "ScenarioAddedEvent": {
+        "required": [
+          "actions",
+          "conditions",
+          "hubId",
+          "name",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанный с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "name": {
+            "maxLength": 2147483647,
+            "minLength": 3,
+            "type": "string",
+            "description": "Название добавленного сценария. Должно содержать не менее 3 символов."
+          },
+          "conditions": {
+            "type": "array",
+            "description": "Список условий, которые связаны со сценарием. Не может быть пустым.",
+            "items": {
+              "$ref": "#/components/schemas/ScenarioCondition"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "description": "Список действий, которые должны быть выполнены в рамках сценария. Не может быть пустым.",
+            "items": {
+              "$ref": "#/components/schemas/DeviceAction"
+            }
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий хаба.",
+            "enum": [
+              "DEVICE_ADDED",
+              "DEVICE_REMOVED",
+              "SCENARIO_ADDED",
+              "SCENARIO_REMOVED"
+            ]
+          }
+        },
+        "description": "Событие добавления сценария в систему. Содержит информацию о названии сценария, условиях и действиях."
+      },
+      "ScenarioCondition": {
+        "type": "object",
+        "properties": {
+          "sensorId": {
+            "type": "string",
+            "description": "Идентификатор датчика, связанного с условием."
+          },
+          "type": {
+            "type": "string",
+            "description": "Типы условий, которые могут использоваться в сценариях.",
+            "enum": [
+              "MOTION",
+              "LUMINOSITY",
+              "SWITCH",
+              "TEMPERATURE",
+              "CO2LEVEL",
+              "HUMIDITY"
+            ]
+          },
+          "operation": {
+            "type": "string",
+            "description": "Операции, которые могут быть использованы в условиях.",
+            "enum": [
+              "EQUALS",
+              "GREATER_THAN",
+              "LOWER_THAN"
+            ]
+          },
+          "value": {
+            "type": "integer",
+            "description": "Значение, используемое в условии.",
+            "format": "int32"
+          }
+        },
+        "description": "Условие сценария, которое содержит информацию о датчике, типе условия, операции и значении."
+      },
+      "ScenarioRemovedEvent": {
+        "required": [
+          "hubId",
+          "name",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "hubId": {
+            "type": "string",
+            "description": "Идентификатор хаба, связанный с событием."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Временная метка события. По умолчанию устанавливается текущее время.",
+            "format": "date-time"
+          },
+          "name": {
+            "maxLength": 2147483647,
+            "minLength": 3,
+            "type": "string",
+            "description": "Название удаленного сценария. Должно содержать не менее 3 символов."
+          },
+          "type": {
+            "type": "string",
+            "description": "Перечисление типов событий хаба.",
+            "enum": [
+              "DEVICE_ADDED",
+              "DEVICE_REMOVED",
+              "SCENARIO_ADDED",
+              "SCENARIO_REMOVED"
+            ]
+          }
+        },
+        "description": "Событие удаления сценария из системы. Содержит информацию о названии удаленного сценария."
+      }
+    }
+  }
+}
