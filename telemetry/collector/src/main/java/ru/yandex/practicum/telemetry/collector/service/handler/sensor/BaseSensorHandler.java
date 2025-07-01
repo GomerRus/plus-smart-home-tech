@@ -24,6 +24,7 @@ public abstract class BaseSensorHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEvent sensorEvent) {
+        log.debug("Начинаем обработку события: {}", sensorEvent);
         try {
             ProducerRecord<String, SpecificRecordBase> record =
                     new ProducerRecord<>(
@@ -34,6 +35,7 @@ public abstract class BaseSensorHandler implements SensorEventHandler {
                             mapToAvro(sensorEvent)
                     );
             producer.sendRecord(record);
+            log.info("Событие успешно отправлено в Kafka");
         } catch (Exception e) {
             log.error("Ошибка при обработке события {}", sensorEvent, e);
             throw new RuntimeException("Ошибка при отправке события в Kafka", e);

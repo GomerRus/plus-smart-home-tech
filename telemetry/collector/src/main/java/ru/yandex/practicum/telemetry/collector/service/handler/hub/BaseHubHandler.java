@@ -24,6 +24,7 @@ public abstract class BaseHubHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEvent hubEvent) {
+        log.debug("Начинаем обработку события: {}", hubEvent);
         try {
             ProducerRecord<String, SpecificRecordBase> record =
                     new ProducerRecord<>(
@@ -34,6 +35,7 @@ public abstract class BaseHubHandler implements HubEventHandler {
                             mapToAvro(hubEvent)
                     );
             producer.sendRecord(record);
+            log.info("Событие успешно отправлено в Kafka");
         } catch (Exception e) {
             log.error("Ошибка при обработке события {}", hubEvent, e);
             throw new RuntimeException("Ошибка при отправке события в Kafka", e);

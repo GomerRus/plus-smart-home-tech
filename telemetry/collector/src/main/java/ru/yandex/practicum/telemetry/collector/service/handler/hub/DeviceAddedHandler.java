@@ -34,10 +34,11 @@ public class DeviceAddedHandler extends BaseHubHandler {
     private DeviceTypeAvro mapToDeviceTypeAvro(DeviceType deviceType) {
         return switch (deviceType) {
             case DeviceType.MOTION_SENSOR -> DeviceTypeAvro.MOTION_SENSOR;
-            case DeviceType.CLIMATE_SENSOR -> DeviceTypeAvro.CLIMATE_SENSOR;
-            case DeviceType.LIGHT_SENSOR -> DeviceTypeAvro.LIGHT_SENSOR;
-            case DeviceType.SWITCH_SENSOR -> DeviceTypeAvro.SWITCH_SENSOR;
             case DeviceType.TEMPERATURE_SENSOR -> DeviceTypeAvro.TEMPERATURE_SENSOR;
+            case DeviceType.LIGHT_SENSOR -> DeviceTypeAvro.LIGHT_SENSOR;
+            case DeviceType.CLIMATE_SENSOR -> DeviceTypeAvro.CLIMATE_SENSOR;
+            case DeviceType.SWITCH_SENSOR -> DeviceTypeAvro.SWITCH_SENSOR;
+
         };
     }
 }
