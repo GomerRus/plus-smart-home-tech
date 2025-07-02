@@ -21,6 +21,12 @@ public class MotionSensorHandler extends BaseSensorHandler<MotionSensorAvro> {
     }
 
     @Override
+    public void handle(SensorEvent sensorEvent) {
+        validEventType(sensorEvent, MotionSensorEvent.class);
+        super.handle(sensorEvent);
+    }
+
+    @Override
     public MotionSensorAvro mapToAvro(SensorEvent sensorEvent) {
         MotionSensorEvent motionSensorEvent = (MotionSensorEvent) sensorEvent;
         return MotionSensorAvro.newBuilder()

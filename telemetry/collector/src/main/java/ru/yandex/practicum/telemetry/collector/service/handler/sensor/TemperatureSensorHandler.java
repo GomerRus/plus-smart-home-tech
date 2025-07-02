@@ -21,6 +21,12 @@ public class TemperatureSensorHandler extends BaseSensorHandler<TemperatureSenso
     }
 
     @Override
+    public void handle(SensorEvent sensorEvent) {
+        validEventType(sensorEvent, TemperatureSensorEvent.class);
+        super.handle(sensorEvent);
+    }
+
+    @Override
     public TemperatureSensorAvro mapToAvro(SensorEvent sensorEvent) {
         TemperatureSensorEvent temperatureSensorEvent = (TemperatureSensorEvent) sensorEvent;
         return TemperatureSensorAvro.newBuilder()

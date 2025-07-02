@@ -21,6 +21,12 @@ public class LightSensorHandler extends BaseSensorHandler<LightSensorAvro> {
     }
 
     @Override
+    public void handle(SensorEvent sensorEvent) {
+        validEventType(sensorEvent, LightSensorEvent.class);
+        super.handle(sensorEvent);
+    }
+
+    @Override
     public LightSensorAvro mapToAvro(SensorEvent sensorEvent) {
         LightSensorEvent lightSensorEvent = (LightSensorEvent) sensorEvent;
         return LightSensorAvro.newBuilder()

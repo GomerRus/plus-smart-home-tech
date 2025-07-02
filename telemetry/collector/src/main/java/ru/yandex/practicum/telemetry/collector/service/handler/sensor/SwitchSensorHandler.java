@@ -15,8 +15,15 @@ public class SwitchSensorHandler extends BaseSensorHandler<SwitchSensorAvro> {
         super(kafkaProducer, kafkaConfig);
     }
 
+    @Override
     public SensorEventType getMessageType() {
         return SensorEventType.SWITCH_SENSOR_EVENT;
+    }
+
+    @Override
+    public void handle(SensorEvent sensorEvent) {
+        validEventType(sensorEvent, SwitchSensorEvent.class);
+        super.handle(sensorEvent);
     }
 
     @Override

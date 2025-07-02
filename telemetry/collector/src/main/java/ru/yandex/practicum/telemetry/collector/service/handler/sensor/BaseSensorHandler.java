@@ -57,6 +57,12 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
                 .build();
     }
 
+    protected void validEventType(SensorEvent sensorEvent, Class<? extends SensorEvent> eventType) {
+        if(!(eventType.isInstance(sensorEvent))) {
+            throw  new IllegalArgumentException(STR."\{sensorEvent.getClass()} не является экземпляром \{eventType}");
+        }
+    }
+
     protected abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
 
     protected abstract SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent);

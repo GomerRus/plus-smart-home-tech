@@ -56,6 +56,12 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
                 .build();
     }
 
+    protected void validEventType(HubEvent hubEvent, Class<? extends HubEvent> eventType) {
+        if(!(eventType.isInstance(hubEvent))) {
+            throw  new IllegalArgumentException(STR."\{hubEvent.getClass()} не является экземпляром \{eventType}");
+        }
+    }
+
     protected abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);
 
     protected abstract HubEventAvro mapToAvroHubEvent(HubEvent hubEvent);
