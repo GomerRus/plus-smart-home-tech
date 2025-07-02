@@ -57,8 +57,8 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
     }
 
     protected void validEventType(SensorEvent sensorEvent, Class<? extends SensorEvent> eventType) {
-        if(!(eventType.isInstance(sensorEvent))) {
-            throw  new IllegalArgumentException(STR."\{sensorEvent.getClass()} не является экземпляром \{eventType}");
+        if (!(eventType.isInstance(sensorEvent))) {
+            throw new IllegalArgumentException(sensorEvent.getClass() + " не является экземпляром " + eventType);
         }
     }
 

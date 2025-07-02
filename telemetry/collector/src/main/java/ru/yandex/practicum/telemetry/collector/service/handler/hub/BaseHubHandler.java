@@ -57,8 +57,8 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
     }
 
     protected void validEventType(HubEvent hubEvent, Class<? extends HubEvent> eventType) {
-        if(!(eventType.isInstance(hubEvent))) {
-            throw  new IllegalArgumentException(STR."\{hubEvent.getClass()} не является экземпляром \{eventType}");
+        if (!(eventType.isInstance(hubEvent))) {
+            throw new IllegalArgumentException(hubEvent.getClass() + " не является экземпляром " + eventType);
         }
     }
 
