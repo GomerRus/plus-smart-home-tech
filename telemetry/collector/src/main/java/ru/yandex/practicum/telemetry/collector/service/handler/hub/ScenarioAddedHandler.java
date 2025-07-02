@@ -5,6 +5,7 @@ import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
 import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
@@ -21,7 +22,7 @@ import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProduce
 import java.util.List;
 
 @Component
-public class ScenarioAddedHandler extends BaseHubHandler {
+public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro> {
 
     public ScenarioAddedHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         super(kafkaProducer, kafkaConfig);
@@ -46,9 +47,15 @@ public class ScenarioAddedHandler extends BaseHubHandler {
 
         return ScenarioAddedEventAvro.newBuilder()
                 .setName(scenarioAddedEvent.getName())
-                .setActions(actionAvroList)
                 .setConditions(scenarioConditionAvroList)
+                .setActions(actionAvroList)
                 .build();
+    }
+
+    @Override
+    protected HubEventAvro mapToAvroHubEvent(HubEvent hubEvent) {
+        ScenarioAddedEventAvro avro = mapToAvro(hubEvent);
+        return buildHubEventAvro(hubEvent, avro);
     }
 
     private ScenarioConditionAvro mapToScenarioConditionAvro(ScenarioCondition scenarioCondition) {

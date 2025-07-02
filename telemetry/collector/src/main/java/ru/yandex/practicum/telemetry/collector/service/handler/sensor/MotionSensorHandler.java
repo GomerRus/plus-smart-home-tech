@@ -2,6 +2,7 @@ package ru.yandex.practicum.telemetry.collector.service.handler.sensor;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
 import ru.yandex.practicum.telemetry.collector.model.sensor.MotionSensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensor.SensorEvent;
@@ -9,7 +10,7 @@ import ru.yandex.practicum.telemetry.collector.model.sensor.enums.SensorEventTyp
 import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
 
 @Component
-public class MotionSensorHandler extends BaseSensorHandler {
+public class MotionSensorHandler extends BaseSensorHandler<MotionSensorAvro> {
     public MotionSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         super(kafkaProducer, kafkaConfig);
     }
@@ -27,5 +28,11 @@ public class MotionSensorHandler extends BaseSensorHandler {
                 .setMotion(motionSensorEvent.getIsMotion())
                 .setVoltage(motionSensorEvent.getVoltage())
                 .build();
+    }
+
+    @Override
+    protected SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent) {
+        MotionSensorAvro avro = mapToAvro(sensorEvent);
+        return buildSensorEventAvro(sensorEvent, avro);
     }
 }

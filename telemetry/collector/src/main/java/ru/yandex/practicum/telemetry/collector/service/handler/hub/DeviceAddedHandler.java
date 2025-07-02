@@ -3,6 +3,7 @@ package ru.yandex.practicum.telemetry.collector.service.handler.hub;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
 import ru.yandex.practicum.telemetry.collector.model.hub.DeviceAddedEvent;
 import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
@@ -11,7 +12,7 @@ import ru.yandex.practicum.telemetry.collector.model.hub.enums.HubEventType;
 import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
 
 @Component
-public class DeviceAddedHandler extends BaseHubHandler {
+public class DeviceAddedHandler extends BaseHubHandler<DeviceAddedEventAvro> {
 
     public DeviceAddedHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         super(kafkaProducer, kafkaConfig);
@@ -29,6 +30,12 @@ public class DeviceAddedHandler extends BaseHubHandler {
                 .setId(deviceAddedEvent.getId())
                 .setType(mapToDeviceTypeAvro(deviceAddedEvent.getDeviceType()))
                 .build();
+    }
+
+    @Override
+    protected HubEventAvro mapToAvroHubEvent(HubEvent hubEvent) {
+        DeviceAddedEventAvro avro = mapToAvro(hubEvent);
+        return buildHubEventAvro(hubEvent, avro);
     }
 
     private DeviceTypeAvro mapToDeviceTypeAvro(DeviceType deviceType) {

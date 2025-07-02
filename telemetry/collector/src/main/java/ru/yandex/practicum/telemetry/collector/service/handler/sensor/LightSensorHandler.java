@@ -2,6 +2,7 @@ package ru.yandex.practicum.telemetry.collector.service.handler.sensor;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
 import ru.yandex.practicum.telemetry.collector.model.sensor.LightSensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensor.SensorEvent;
@@ -9,7 +10,7 @@ import ru.yandex.practicum.telemetry.collector.model.sensor.enums.SensorEventTyp
 import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
 
 @Component
-public class LightSensorHandler extends BaseSensorHandler {
+public class LightSensorHandler extends BaseSensorHandler<LightSensorAvro> {
     public LightSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         super(kafkaProducer, kafkaConfig);
     }
@@ -26,5 +27,11 @@ public class LightSensorHandler extends BaseSensorHandler {
                 .setLinkQuality(lightSensorEvent.getLinkQuality())
                 .setLuminosity(lightSensorEvent.getLuminosity())
                 .build();
+    }
+
+    @Override
+    protected SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent) {
+        LightSensorAvro avro = mapToAvro(sensorEvent);
+        return buildSensorEventAvro(sensorEvent, avro);
     }
 }

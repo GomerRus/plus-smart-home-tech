@@ -3,13 +3,14 @@ package ru.yandex.practicum.telemetry.collector.service.handler.sensor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
 import ru.yandex.practicum.telemetry.collector.model.sensor.SensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensor.enums.SensorEventType;
 import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
 
 @Slf4j
-public abstract class BaseSensorHandler implements SensorEventHandler {
+public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements SensorEventHandler {
 
     private KafkaEventProducer producer;
     private String topic;
@@ -32,7 +33,7 @@ public abstract class BaseSensorHandler implements SensorEventHandler {
                             null,
                             System.currentTimeMillis(),
                             sensorEvent.getHubId(),
-                            mapToAvro(sensorEvent)
+                            mapToAvroSensorEvent(sensorEvent)
                     );
             producer.sendRecord(record);
             log.info("Событие успешно отправлено в Kafka");
@@ -47,5 +48,16 @@ public abstract class BaseSensorHandler implements SensorEventHandler {
         throw new UnsupportedOperationException("Метод должен быть переопределен в наследнике");
     }
 
-    abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
+    protected SensorEventAvro buildSensorEventAvro(SensorEvent sensorEvent, T payloadAvro) {
+        return SensorEventAvro.newBuilder()
+                .setId(sensorEvent.getId())
+                .setHubId(sensorEvent.getHubId())
+                .setTimestamp(sensorEvent.getTimestamp())
+                .setPayload(payloadAvro)
+                .build();
+    }
+
+    protected abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
+
+    protected abstract SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent);
 }

@@ -3,13 +3,14 @@ package ru.yandex.practicum.telemetry.collector.service.handler.hub;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
 import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.HubEventType;
 import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
 
 @Slf4j
-public abstract class BaseHubHandler implements HubEventHandler {
+public abstract class BaseHubHandler<T extends SpecificRecordBase> implements HubEventHandler {
 
     private KafkaEventProducer producer;
     private String topic;
@@ -32,7 +33,7 @@ public abstract class BaseHubHandler implements HubEventHandler {
                             null,
                             System.currentTimeMillis(),
                             hubEvent.getHubId(),
-                            mapToAvro(hubEvent)
+                            mapToAvroHubEvent(hubEvent)
                     );
             producer.sendRecord(record);
             log.info("Событие успешно отправлено в Kafka");
@@ -47,6 +48,15 @@ public abstract class BaseHubHandler implements HubEventHandler {
         throw new UnsupportedOperationException("Метод должен быть переопределен в наследнике");
     }
 
-    abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);
+    protected HubEventAvro buildHubEventAvro(HubEvent hubEvent, T payloadAvro) {
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEvent.getHubId())
+                .setTimestamp(hubEvent.getTimestamp())
+                .setPayload(payloadAvro)
+                .build();
+    }
 
+    protected abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);
+
+    protected abstract HubEventAvro mapToAvroHubEvent(HubEvent hubEvent);
 }
