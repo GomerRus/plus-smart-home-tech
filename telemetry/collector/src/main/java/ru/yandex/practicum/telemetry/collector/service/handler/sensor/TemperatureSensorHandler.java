@@ -3,16 +3,17 @@ package ru.yandex.practicum.telemetry.collector.service.handler.sensor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
-import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.telemetry.collector.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.telemetry.collector.model.sensor.SensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensor.TemperatureSensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensor.enums.SensorEventType;
-import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
+import ru.yandex.practicum.telemetry.collector.kafka.KafkaEventProducer;
 
 @Component
 public class TemperatureSensorHandler extends BaseSensorHandler<TemperatureSensorAvro> {
-    public TemperatureSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        super(kafkaProducer, kafkaConfig);
+
+    public TemperatureSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames) {
+        super(producer, topicsNames);
     }
 
     @Override

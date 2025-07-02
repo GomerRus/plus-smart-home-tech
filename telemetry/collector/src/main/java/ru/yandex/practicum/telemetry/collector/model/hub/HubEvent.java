@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.HubEventType;
 
 import java.time.Instant;
@@ -15,7 +14,7 @@ import java.time.Instant;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
         property = "type",
-        defaultImpl = HubEventType.class
+        defaultImpl = HubEvent.class
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DeviceAddedEvent.class, name = "DEVICE_ADDED"),
@@ -26,7 +25,6 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@ToString
 public abstract class HubEvent {
     @NotBlank
     private String hubId;

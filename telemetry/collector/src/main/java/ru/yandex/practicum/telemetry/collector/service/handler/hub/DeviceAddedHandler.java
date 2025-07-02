@@ -4,18 +4,18 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.telemetry.collector.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.telemetry.collector.model.hub.DeviceAddedEvent;
 import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.DeviceType;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.HubEventType;
-import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
+import ru.yandex.practicum.telemetry.collector.kafka.KafkaEventProducer;
 
 @Component
 public class DeviceAddedHandler extends BaseHubHandler<DeviceAddedEventAvro> {
 
-    public DeviceAddedHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        super(kafkaProducer, kafkaConfig);
+    public DeviceAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames) {
+        super(producer, topicsNames);
     }
 
     @Override

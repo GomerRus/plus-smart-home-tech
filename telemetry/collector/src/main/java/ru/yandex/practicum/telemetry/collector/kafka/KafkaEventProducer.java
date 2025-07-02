@@ -1,4 +1,4 @@
-package ru.yandex.practicum.telemetry.collector.service.handler;
+package ru.yandex.practicum.telemetry.collector.kafka;
 
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
@@ -8,14 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer;
 
-import java.time.Duration;
 import java.util.Properties;
-import java.util.concurrent.Future;
 
 @Getter
 @Setter
@@ -23,8 +22,40 @@ import java.util.concurrent.Future;
 @Component
 @Slf4j
 public class KafkaEventProducer {
-
     private final Producer<String, SpecificRecordBase> producer;
+
+    private KafkaEventProducer() {
+        Properties config = new Properties();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GeneralAvroSerializer.class);
+        this.producer = new KafkaProducer<>(config);
+    }
+
+    public void sendRecord(ProducerParam param) {
+        if (!param.isValid()) {
+            throw new IllegalArgumentException("invalid ProducerParam=" + param);
+        }
+
+        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
+                param.getTopic(),
+                param.getPartition(),
+                param.getTimestamp(),
+                param.getKey(),
+                param.getValue());
+
+        producer.send(record);
+    }
+
+    @PreDestroy
+    private void close() {
+        if (producer != null) {
+            producer.flush();
+            producer.close();
+        }
+    }
+}
+    /* private final Producer<String, SpecificRecordBase> producer;
 
     public KafkaEventProducer(KafkaConfig kafkaConfig) {
         Properties properties = kafkaConfig.getKafkaProperties();
@@ -64,4 +95,4 @@ public class KafkaEventProducer {
     public void destroy() {
         close(Duration.ofSeconds(30));
     }
-}
+}*/

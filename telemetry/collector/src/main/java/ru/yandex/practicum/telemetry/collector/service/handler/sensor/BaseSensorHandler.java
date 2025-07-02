@@ -1,45 +1,33 @@
 package ru.yandex.practicum.telemetry.collector.service.handler.sensor;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.telemetry.collector.kafka.ProducerParam;
+import ru.yandex.practicum.telemetry.collector.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.telemetry.collector.model.sensor.SensorEvent;
 import ru.yandex.practicum.telemetry.collector.model.sensor.enums.SensorEventType;
-import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
+import ru.yandex.practicum.telemetry.collector.kafka.KafkaEventProducer;
 
 @Slf4j
+@RequiredArgsConstructor
 public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements SensorEventHandler {
-    private KafkaEventProducer producer;
-    private String topic;
-
-    public BaseSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        this.producer = kafkaProducer;
-        topic = kafkaConfig.getTopics().get("sensors-events");
-        if (topic == null) {
-            throw new IllegalArgumentException("Тема sensors-events не настроена в конфигурации");
-        }
-    }
+    private final KafkaEventProducer producer;
+    private final KafkaTopicsNames topicsNames;
 
     @Override
-    public void handle(SensorEvent sensorEvent) {
-        log.debug("Начинаем обработку события: {}", sensorEvent);
-        try {
-            ProducerRecord<String, SpecificRecordBase> record =
-                    new ProducerRecord<>(
-                            topic,
-                            null,
-                            System.currentTimeMillis(),
-                            sensorEvent.getHubId(),
-                            mapToAvroSensorEvent(sensorEvent)
-                    );
-            producer.sendRecord(record);
-            log.info("Событие успешно отправлено в Kafka");
-        } catch (Exception e) {
-            log.error("Ошибка при обработке события {}", sensorEvent, e);
-            throw new RuntimeException("Ошибка при отправке события в Kafka", e);
+    public void handle(SensorEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("HubEvent cannot be null");
         }
+         log.trace("instance check confirm hubId={}", event.getHubId());
+        SensorEventAvro avro = mapToAvroSensorEvent(event);
+         log.trace("map To avro confirm hubId={}", event.getHubId());
+        ProducerParam param = createProducerParam(event, avro);
+         log.trace("param created confirm hubId={}", event.getHubId());
+        producer.sendRecord(param);
+         log.trace("record send confirm hubId={}", event.getHubId());
     }
 
     @Override
@@ -60,6 +48,15 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
         if (!(eventType.isInstance(sensorEvent))) {
             throw new IllegalArgumentException(sensorEvent.getClass() + " не является экземпляром " + eventType);
         }
+    }
+
+    private ProducerParam createProducerParam(SensorEvent event, SensorEventAvro avro) {
+        return ProducerParam.builder()
+                .topic(topicsNames.getSensorsTopic())
+                .timestamp(event.getTimestamp().toEpochMilli())
+                .key(event.getHubId())
+                .value(avro)
+                .build();
     }
 
     protected abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);

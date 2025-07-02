@@ -1,46 +1,34 @@
 package ru.yandex.practicum.telemetry.collector.service.handler.hub;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.telemetry.collector.kafka.KafkaEventProducer;
+import ru.yandex.practicum.telemetry.collector.kafka.ProducerParam;
+import ru.yandex.practicum.telemetry.collector.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.HubEventType;
-import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
 
 @Slf4j
+@RequiredArgsConstructor
 public abstract class BaseHubHandler<T extends SpecificRecordBase> implements HubEventHandler {
 
-    private KafkaEventProducer producer;
-    private String topic;
-
-    public BaseHubHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        this.producer = kafkaProducer;
-        topic = kafkaConfig.getTopics().get("hubs-events");
-        if (topic == null) {
-            throw new IllegalArgumentException("Тема hubs-events не настроена в конфигурации");
-        }
-    }
+    protected final KafkaEventProducer producer;
+    protected final KafkaTopicsNames topicsNames;
 
     @Override
-    public void handle(HubEvent hubEvent) {
-        log.debug("Начинаем обработку события: {}", hubEvent);
-        try {
-            ProducerRecord<String, SpecificRecordBase> record =
-                    new ProducerRecord<>(
-                            topic,
-                            null,
-                            System.currentTimeMillis(),
-                            hubEvent.getHubId(),
-                            mapToAvroHubEvent(hubEvent)
-                    );
-            producer.sendRecord(record);
-            log.info("Событие успешно отправлено в Kafka");
-        } catch (Exception e) {
-            log.error("Ошибка при обработке события {}", hubEvent, e);
-            throw new RuntimeException("Ошибка при отправке события в Kafka", e);
+    public void handle(HubEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("HubEvent cannot be null");
         }
+         log.trace("instance check confirm hubId={}", event.getHubId());
+        HubEventAvro avro = mapToAvroHubEvent(event);
+         log.trace("map To avro confirm hubId={}", event.getHubId());
+        ProducerParam param = createProducerSendParam(event, avro);
+         log.trace("param created confirm hubId={}", event.getHubId());
+        producer.sendRecord(param);
+        log.trace("record send confirm hubId={}", event.getHubId());
     }
 
     @Override
@@ -60,6 +48,15 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
         if (!(eventType.isInstance(hubEvent))) {
             throw new IllegalArgumentException(hubEvent.getClass() + " не является экземпляром " + eventType);
         }
+    }
+
+    private ProducerParam createProducerSendParam(HubEvent event, HubEventAvro avro) {
+        return ProducerParam.builder()
+                .topic(topicsNames.getSensorsTopic())
+                .timestamp(event.getTimestamp().toEpochMilli())
+                .key(event.getHubId())
+                .value(avro)
+                .build();
     }
 
     protected abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);

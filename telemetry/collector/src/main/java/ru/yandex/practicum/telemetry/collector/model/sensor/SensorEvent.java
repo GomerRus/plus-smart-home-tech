@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import ru.yandex.practicum.telemetry.collector.model.sensor.enums.SensorEventType;
 
 import java.time.Instant;
@@ -15,7 +14,7 @@ import java.time.Instant;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
         property = "type",
-        defaultImpl = SensorEventType.class
+        defaultImpl = SensorEvent.class
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ClimateSensorEvent.class, name = "CLIMATE_SENSOR_EVENT"),
@@ -27,7 +26,6 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@ToString
 public abstract class SensorEvent {
     @NotBlank
     private String id;

@@ -8,7 +8,7 @@ import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
-import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.telemetry.collector.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.telemetry.collector.model.hub.DeviceAction;
 import ru.yandex.practicum.telemetry.collector.model.hub.HubEvent;
 import ru.yandex.practicum.telemetry.collector.model.hub.ScenarioAddedEvent;
@@ -17,14 +17,15 @@ import ru.yandex.practicum.telemetry.collector.model.hub.enums.ActionType;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.ConditionOperation;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.ConditionType;
 import ru.yandex.practicum.telemetry.collector.model.hub.enums.HubEventType;
-import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProducer;
+import ru.yandex.practicum.telemetry.collector.kafka.KafkaEventProducer;
 
 import java.util.List;
 
 @Component
 public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro> {
-    public ScenarioAddedHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        super(kafkaProducer, kafkaConfig);
+
+    public ScenarioAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames) {
+        super(producer, topicsNames);
     }
 
     @Override
