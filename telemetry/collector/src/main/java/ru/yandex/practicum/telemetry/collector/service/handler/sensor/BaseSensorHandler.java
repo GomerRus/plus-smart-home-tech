@@ -11,7 +11,6 @@ import ru.yandex.practicum.telemetry.collector.service.handler.KafkaEventProduce
 
 @Slf4j
 public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements SensorEventHandler {
-
     private KafkaEventProducer producer;
     private String topic;
 
