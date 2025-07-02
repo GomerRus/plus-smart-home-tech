@@ -21,13 +21,6 @@ public class DeviceRemoveHandler extends BaseHubHandler<DeviceRemovedEventAvro> 
     }
 
     @Override
-    public void handle(HubEvent hubEvent) {
-        validEventType(hubEvent, DeviceRemovedEvent.class);
-        super.handle(hubEvent);
-    }
-
-
-    @Override
     public DeviceRemovedEventAvro mapToAvro(HubEvent hubEvent) {
         DeviceRemovedEvent deviceRemovedEvent = (DeviceRemovedEvent) hubEvent;
         return DeviceRemovedEventAvro.newBuilder()

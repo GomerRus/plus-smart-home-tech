@@ -19,12 +19,6 @@ public class ScenarioRemovedHandler extends BaseHubHandler<ScenarioRemovedEventA
     }
 
     @Override
-    public void handle(HubEvent hubEvent) {
-        validEventType(hubEvent, ScenarioRemovedEvent.class);
-        super.handle(hubEvent);
-    }
-
-    @Override
     public ScenarioRemovedEventAvro mapToAvro(HubEvent hubEvent) {
         ScenarioRemovedEvent scenarioRemovedEvent = (ScenarioRemovedEvent) hubEvent;
         return ScenarioRemovedEventAvro.newBuilder()

@@ -33,12 +33,6 @@ public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro>
     }
 
     @Override
-    public void handle(HubEvent hubEvent) {
-        validEventType(hubEvent, ScenarioAddedEvent.class);
-        super.handle(hubEvent);
-    }
-
-    @Override
     public ScenarioAddedEventAvro mapToAvro(HubEvent hubEvent) {
         ScenarioAddedEvent scenarioAddedEvent = (ScenarioAddedEvent) hubEvent;
         List<ScenarioConditionAvro> scenarioConditionAvroList = scenarioAddedEvent.getConditions().stream()
