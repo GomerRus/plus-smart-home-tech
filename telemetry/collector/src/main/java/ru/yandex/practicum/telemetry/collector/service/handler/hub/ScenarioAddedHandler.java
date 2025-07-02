@@ -23,7 +23,6 @@ import java.util.List;
 
 @Component
 public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro> {
-
     public ScenarioAddedHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         super(kafkaProducer, kafkaConfig);
     }
@@ -41,16 +40,13 @@ public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro>
 
     @Override
     public ScenarioAddedEventAvro mapToAvro(HubEvent hubEvent) {
-
         ScenarioAddedEvent scenarioAddedEvent = (ScenarioAddedEvent) hubEvent;
         List<ScenarioConditionAvro> scenarioConditionAvroList = scenarioAddedEvent.getConditions().stream()
                 .map(this::mapToScenarioConditionAvro)
                 .toList();
-
         List<DeviceActionAvro> actionAvroList = scenarioAddedEvent.getActions().stream()
                 .map(this::mapToDeviceActionAvro)
                 .toList();
-
         return ScenarioAddedEventAvro.newBuilder()
                 .setName(scenarioAddedEvent.getName())
                 .setConditions(scenarioConditionAvroList)
@@ -65,12 +61,11 @@ public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro>
     }
 
     private ScenarioConditionAvro mapToScenarioConditionAvro(ScenarioCondition scenarioCondition) {
-
         return ScenarioConditionAvro.newBuilder()
                 .setSensorId(scenarioCondition.getSensorId())
                 .setType(mapToConditionTypeAvro(scenarioCondition.getType()))
-                .setValue(scenarioCondition.getValue())
                 .setOperation(mapToConditionOperationAvro(scenarioCondition.getOperation()))
+                .setValue(scenarioCondition.getValue())
                 .build();
     }
 
@@ -94,7 +89,6 @@ public class ScenarioAddedHandler extends BaseHubHandler<ScenarioAddedEventAvro>
     }
 
     private DeviceActionAvro mapToDeviceActionAvro(DeviceAction deviceAction) {
-
         return DeviceActionAvro.newBuilder()
                 .setSensorId(deviceAction.getSensorId())
                 .setType(mapToActionTypeAvro(deviceAction.getType()))
