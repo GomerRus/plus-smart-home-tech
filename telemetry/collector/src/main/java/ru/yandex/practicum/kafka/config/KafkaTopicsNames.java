@@ -10,5 +10,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class KafkaTopicsNames {
     private String sensorsTopic;
     private String hubsTopic;
-
 }
