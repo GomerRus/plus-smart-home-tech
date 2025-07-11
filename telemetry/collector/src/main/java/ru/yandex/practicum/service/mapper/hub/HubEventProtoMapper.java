@@ -53,6 +53,7 @@ public interface HubEventProtoMapper {
 
     @Named("mapScenarioConditionProtoValueToModelValue")
     default Object mapScenarioConditionProtoValueToModelValue(ScenarioConditionProto proto) {
+
         if (proto.hasIntValue()) {
             return proto.getIntValue();
         } else if (proto.hasBoolValue()) {
