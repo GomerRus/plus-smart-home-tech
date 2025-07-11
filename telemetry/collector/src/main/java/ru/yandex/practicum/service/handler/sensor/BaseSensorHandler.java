@@ -3,45 +3,63 @@ package ru.yandex.practicum.service.handler.sensor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.ProducerParam;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.model.sensor.SensorEvent;
-import ru.yandex.practicum.model.sensor.enums.SensorEventType;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
+import ru.yandex.practicum.service.mapper.sensor.SensorEventAvroMapper;
+import ru.yandex.practicum.service.mapper.sensor.SensorEventProtoMapper;
+
+import java.time.Instant;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements SensorEventHandler {
+public abstract class BaseSensorHandler implements SensorEventHandler {
     protected final KafkaEventProducer producer;
     protected final KafkaTopicsNames topicsNames;
+    protected final SensorEventAvroMapper avroMapper;
+    protected final SensorEventProtoMapper protoMapper;
+
+    protected abstract SensorEventAvro mapSensorEventToAvro(SensorEvent sensorEvent);
+
+    protected abstract SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto);
 
     @Override
-    public void handle(SensorEvent event) {
-        if (event == null) {
+    public void handle(SensorEventProto sensorProto) {
+        if (sensorProto == null) {
             throw new IllegalArgumentException("HubEvent cannot be null");
         }
-        log.trace("instance check confirm hubId={}", event.getHubId());
-        SensorEventAvro avro = mapToAvroSensorEvent(event);
-        log.trace("map To avro confirm hubId={}", event.getHubId());
-        ProducerParam param = createProducerParam(event, avro);
-        log.trace("param created confirm hubId={}", event.getHubId());
+        SensorEvent sensor = mapSensorProtoToModel(sensorProto);
+        log.trace("map To SENSOR confirm hubId={}", sensor.getHubId());
+        SensorEventAvro avro = mapSensorEventToAvro(sensor);
+        log.trace("map To AVRO confirm hubId={}", sensor.getHubId());
+        ProducerParam param = createProducerParam(sensor, avro);
+        log.trace("param created confirm hubId={}", sensor.getHubId());
         producer.sendRecord(param);
-        log.trace("record send confirm hubId={}", event.getHubId());
+        log.trace("record send confirm hubId={}", sensor.getHubId());
     }
 
-    @Override
-    public SensorEventType getMessageType() {
-        throw new UnsupportedOperationException("Метод должен быть переопределен в наследнике");
-    }
-
-    protected SensorEventAvro buildSensorEventAvro(SensorEvent sensorEvent, T payloadAvro) {
+    protected SensorEventAvro buildSensorEventAvro(SensorEvent sensorEvent, SpecificRecordBase payloadAvro) {
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(sensorEvent.getTimestamp())
                 .setPayload(payloadAvro)
                 .build();
+    }
+
+    protected SensorEvent mapBaseSensorProtoFieldsToSensor(SensorEvent sensor, SensorEventProto sensorProto) {
+        if (sensorProto == null) {
+            return null;
+        }
+        Instant timestamp = Instant.ofEpochSecond(sensorProto.getTimestamp().getSeconds());
+        sensor.setId(sensorProto.getId());
+        sensor.setHubId(sensorProto.getHubId());
+        sensor.setTimestamp(timestamp);
+
+        return sensor;
     }
 
     private ProducerParam createProducerParam(SensorEvent event, SensorEventAvro avro) {
@@ -52,8 +70,4 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
                 .value(avro)
                 .build();
     }
-
-    protected abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
-
-    protected abstract SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent);
 }
