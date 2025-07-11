@@ -13,43 +13,43 @@ import ru.yandex.practicum.grpc.telemetry.event.DeviceRemovedEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioAddedEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioConditionProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioRemovedEventProto;
-import ru.yandex.practicum.model.hub.DeviceAddedEvent;
-import ru.yandex.practicum.model.hub.DeviceRemovedEvent;
-import ru.yandex.practicum.model.hub.ScenarioAddedEvent;
-import ru.yandex.practicum.model.hub.ScenarioCondition;
-import ru.yandex.practicum.model.hub.ScenarioRemovedEvent;
-import ru.yandex.practicum.model.hub.enums.ActionType;
-import ru.yandex.practicum.model.hub.enums.ConditionOperation;
-import ru.yandex.practicum.model.hub.enums.ConditionType;
+import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface HubEventProtoMapper {
 
-    @Mapping(target = "deviceType", source = "type")
+    @Mapping(target = "type", source = "type")
     @ValueMapping(target = "MOTION_SENSOR", source = "UNRECOGNIZED")
-    DeviceAddedEvent mapDeviceAddedProtoToModel(DeviceAddedEventProto deviceAddedEventProto);
+    DeviceAddedEventAvro mapDeviceAddedProtoToModel(DeviceAddedEventProto deviceAddedEventProto);
 
-    DeviceRemovedEvent mapDeviceRemovedProtoToModel(DeviceRemovedEventProto deviceRemovedEventProto);
+    DeviceRemovedEventAvro mapDeviceRemovedProtoToModel(DeviceRemovedEventProto deviceRemovedEventProto);
 
     @Mapping(target = "conditions", source = "conditionsList")
     @Mapping(target = "actions", source = "actionsList")
-    ScenarioAddedEvent mapScenarioAddedProtoToModel(ScenarioAddedEventProto scenarioAddedEventProto);
+    ScenarioAddedEventAvro mapScenarioAddedProtoToModel(ScenarioAddedEventProto scenarioAddedEventProto);
 
-    ScenarioRemovedEvent mapScenarioRemovedProtoToModel(ScenarioRemovedEventProto scenarioRemovedEventProto);
+    ScenarioRemovedEventAvro mapScenarioRemovedProtoToModel(ScenarioRemovedEventProto scenarioRemovedEventProto);
 
     @Mapping(target = "type", source = "type")
     @Mapping(target = "operation", source = "operation")
     @Mapping(target = "value", expression = "java(mapScenarioConditionProtoValueToModelValue(scenarioConditionProto))")
-    ScenarioCondition mapScenarioConditionProtoToModel(ScenarioConditionProto scenarioConditionProto);
+    ScenarioConditionAvro mapScenarioConditionProtoToModel(ScenarioConditionProto scenarioConditionProto);
 
     @ValueMapping(target = "ACTIVATE", source = "UNRECOGNIZED")
-    ActionType mapActionTypeProtoToModel(ActionTypeProto actionTypeProto);
+    ActionTypeAvro mapActionTypeProtoToModel(ActionTypeProto actionTypeProto);
 
     @ValueMapping(target = "EQUALS", source = "UNRECOGNIZED")
-    ConditionOperation mapConditionOperationProtoToModel(ConditionOperationProto conditionOperationProto);
+    ConditionOperationAvro mapConditionOperationProtoToModel(ConditionOperationProto conditionOperationProto);
 
     @ValueMapping(target = "MOTION", source = "UNRECOGNIZED")
-    ConditionType mapConditionTypeProtoToModel(ConditionTypeProto conditionTypeProto);
+    ConditionTypeAvro mapConditionTypeProtoToModel(ConditionTypeProto conditionTypeProto);
 
     @Named("mapScenarioConditionProtoValueToModelValue")
     default Object mapScenarioConditionProtoValueToModelValue(ScenarioConditionProto proto) {

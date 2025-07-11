@@ -7,9 +7,7 @@ import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.ProducerParam;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.sensor.SensorEvent;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
-import ru.yandex.practicum.service.mapper.sensor.SensorEventAvroMapper;
 import ru.yandex.practicum.service.mapper.sensor.SensorEventProtoMapper;
 
 import java.time.Instant;
@@ -19,55 +17,39 @@ import java.time.Instant;
 public abstract class BaseSensorHandler implements SensorEventHandler {
     protected final KafkaEventProducer producer;
     protected final KafkaTopicsNames topicsNames;
-    protected final SensorEventAvroMapper avroMapper;
     protected final SensorEventProtoMapper protoMapper;
-
-    protected abstract SensorEventAvro mapSensorEventToAvro(SensorEvent sensorEvent);
-
-    protected abstract SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto);
 
     @Override
     public void handle(SensorEventProto sensorProto) {
         if (sensorProto == null) {
             throw new IllegalArgumentException("HubEvent cannot be null");
         }
-        SensorEvent sensor = mapSensorProtoToModel(sensorProto);
-        log.trace("map To SENSOR confirm hubId={}", sensor.getHubId());
-        SensorEventAvro avro = mapSensorEventToAvro(sensor);
-        log.trace("map To AVRO confirm hubId={}", sensor.getHubId());
-        ProducerParam param = createProducerParam(sensor, avro);
-        log.trace("param created confirm hubId={}", sensor.getHubId());
+        SensorEventAvro avro = mapSensorProtoToAvro(sensorProto);
+        log.trace("map To AVRO confirm hubId={}", sensorProto.getHubId());
+        ProducerParam param = createProducerParam(sensorProto, avro);
+        log.trace("param created confirm hubId={}", sensorProto.getHubId());
         producer.sendRecord(param);
-        log.trace("record send confirm hubId={}", sensor.getHubId());
+        log.trace("record send confirm hubId={}", sensorProto.getHubId());
     }
 
-    protected SensorEventAvro buildSensorEventAvro(SensorEvent sensorEvent, SpecificRecordBase payloadAvro) {
+    protected SensorEventAvro buildSensorEventAvro(SensorEventProto sensorProto, SpecificRecordBase payloadAvro) {
+        Instant timestamp = Instant.ofEpochSecond(sensorProto.getTimestamp().getSeconds());
         return SensorEventAvro.newBuilder()
-                .setId(sensorEvent.getId())
-                .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp())
+                .setId(sensorProto.getId())
+                .setHubId(sensorProto.getHubId())
+                .setTimestamp(timestamp)
                 .setPayload(payloadAvro)
                 .build();
     }
 
-    protected SensorEvent mapBaseSensorProtoFieldsToSensor(SensorEvent sensor, SensorEventProto sensorProto) {
-        if (sensorProto == null) {
-            return null;
-        }
-        Instant timestamp = Instant.ofEpochSecond(sensorProto.getTimestamp().getSeconds());
-        sensor.setId(sensorProto.getId());
-        sensor.setHubId(sensorProto.getHubId());
-        sensor.setTimestamp(timestamp);
-
-        return sensor;
-    }
-
-    private ProducerParam createProducerParam(SensorEvent event, SensorEventAvro avro) {
+    private ProducerParam createProducerParam(SensorEventProto sensorProto, SensorEventAvro avro) {
         return ProducerParam.builder()
                 .topic(topicsNames.getSensorsTopic())
-                .timestamp(event.getTimestamp().toEpochMilli())
-                .key(event.getHubId())
+                .timestamp(sensorProto.getTimestamp().getSeconds())
+                .key(sensorProto.getHubId())
                 .value(avro)
                 .build();
     }
+
+    protected abstract SensorEventAvro mapSensorProtoToAvro(SensorEventProto sensorProto);
 }

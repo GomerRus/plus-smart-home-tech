@@ -5,32 +5,26 @@ import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.sensor.MotionSensorEvent;
-import ru.yandex.practicum.model.sensor.SensorEvent;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
-import ru.yandex.practicum.service.mapper.sensor.SensorEventAvroMapper;
 import ru.yandex.practicum.service.mapper.sensor.SensorEventProtoMapper;
 
 @Component
 public class MotionSensorHandler extends BaseSensorHandler {
 
-    public MotionSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
-        super(producer, topicsNames, avroMapper, protoMapper);
+    public MotionSensorHandler(KafkaEventProducer producer,
+                               KafkaTopicsNames topicsNames,
+                               SensorEventProtoMapper protoMapper) {
+        super(producer, topicsNames, protoMapper);
     }
 
+    @Override
     public SensorEventProto.PayloadCase getMessageSensorType() {
         return SensorEventProto.PayloadCase.MOTION_SENSOR;
     }
 
     @Override
-    protected SensorEventAvro mapSensorEventToAvro(SensorEvent sensorEvent) {
-        MotionSensorAvro avro = avroMapper.mapMotionSensorToAvro((MotionSensorEvent) sensorEvent);
-        return buildSensorEventAvro(sensorEvent, avro);
-    }
-
-    @Override
-    protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
-        SensorEvent sensor = protoMapper.mapMotionSensorProtoToModel(sensorProto.getMotionSensor());
-        return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
+    protected SensorEventAvro mapSensorProtoToAvro(SensorEventProto sensorProto) {
+        MotionSensorAvro avro = protoMapper.mapMotionSensorProtoToModel(sensorProto.getMotionSensor());
+        return buildSensorEventAvro(sensorProto, avro);
     }
 }
