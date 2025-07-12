@@ -20,7 +20,7 @@ public class ClimateSensorHandler extends BaseSensorHandler {
 
     @Override
     public SensorEventProto.PayloadCase getMessageSensorType() {
-        return SensorEventProto.PayloadCase.CLIMATE_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.CLIMATE_SENSOR;
     }
 
     @Override
@@ -31,7 +31,7 @@ public class ClimateSensorHandler extends BaseSensorHandler {
 
     @Override
     protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
-        ClimateSensorEvent sensor = protoMapper.mapClimateSensorProtoToModel(sensorProto.getClimateSensorEvent());
+        ClimateSensorEvent sensor = protoMapper.mapClimateSensorProtoToModel(sensorProto.getClimateSensor());
         return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
     }
 }

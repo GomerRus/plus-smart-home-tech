@@ -51,13 +51,14 @@ public abstract class BaseSensorHandler implements SensorEventHandler {
     }
 
     protected SensorEvent mapBaseSensorProtoFieldsToSensor(SensorEvent sensor, SensorEventProto sensorProto) {
+        if (sensorProto == null) {
+            return null;
+        }
+        Instant timestamp = Instant.ofEpochSecond(sensorProto.getTimestamp().getSeconds());
         sensor.setId(sensorProto.getId());
         sensor.setHubId(sensorProto.getHubId());
+        sensor.setTimestamp(timestamp);
 
-        long seconds = sensorProto.getTimestamp().getSeconds();
-        int nanos = sensorProto.getTimestamp().getNanos();
-
-        sensor.setTimestamp(Instant.ofEpochSecond(seconds, nanos));
         return sensor;
     }
 

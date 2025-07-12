@@ -19,7 +19,7 @@ public class MotionSensorHandler extends BaseSensorHandler {
     }
 
     public SensorEventProto.PayloadCase getMessageSensorType() {
-        return SensorEventProto.PayloadCase.MOTION_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.MOTION_SENSOR;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class MotionSensorHandler extends BaseSensorHandler {
 
     @Override
     protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
-        SensorEvent sensor = protoMapper.mapMotionSensorProtoToModel(sensorProto.getMotionSensorEvent());
+        SensorEvent sensor = protoMapper.mapMotionSensorProtoToModel(sensorProto.getMotionSensor());
         return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
     }
 }

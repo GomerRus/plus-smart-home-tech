@@ -4,7 +4,7 @@ import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 
 public interface HubEventHandler {
 
-    void handle(HubEventProto hubEvent);
+    void handle(HubEventProto hubProto);
 
     HubEventProto.PayloadCase getMessageHubType();
 }

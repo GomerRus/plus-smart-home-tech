@@ -7,25 +7,25 @@ import ru.yandex.practicum.grpc.telemetry.event.LightSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.MotionSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.SwitchSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.TemperatureSensorProto;
-import ru.yandex.practicum.model.sensor.ClimateSensorEvent;
-import ru.yandex.practicum.model.sensor.LightSensorEvent;
-import ru.yandex.practicum.model.sensor.MotionSensorEvent;
-import ru.yandex.practicum.model.sensor.SwitchSensorEvent;
-import ru.yandex.practicum.model.sensor.TemperatureSensorEvent;
+import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 
 import java.time.Instant;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SensorEventProtoMapper {
 
-    ClimateSensorEvent mapClimateSensorProtoToModel(ClimateSensorProto climateSensorProto);
+    ClimateSensorAvro mapClimateSensorProtoToModel(ClimateSensorProto climateSensorProto);
 
-    LightSensorEvent mapLightSensorProtoToModel(LightSensorProto lightSensorProto);
+    LightSensorAvro mapLightSensorProtoToModel(LightSensorProto lightSensorProto);
 
-    MotionSensorEvent mapMotionSensorProtoToModel(MotionSensorProto motionSensorProto);
+    MotionSensorAvro mapMotionSensorProtoToModel(MotionSensorProto motionSensorProto);
 
-    SwitchSensorEvent mapSwitchSensorProtoToModel(SwitchSensorProto switchSensorProto);
+    SwitchSensorAvro mapSwitchSensorProtoToModel(SwitchSensorProto switchSensorProto);
 
-    TemperatureSensorEvent mapTemperatureSensorProtoToModel(TemperatureSensorProto temperatureSensorProto);
+    TemperatureSensorAvro mapTemperatureSensorProtoToModel(TemperatureSensorProto temperatureSensorProto);
 
 }

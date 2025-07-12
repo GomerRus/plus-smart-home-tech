@@ -20,7 +20,7 @@ public class SwitchSensorHandler extends BaseSensorHandler {
 
     @Override
     public SensorEventProto.PayloadCase getMessageSensorType() {
-        return SensorEventProto.PayloadCase.SWITCH_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.SWITCH_SENSOR;
     }
 
 
@@ -32,7 +32,7 @@ public class SwitchSensorHandler extends BaseSensorHandler {
 
     @Override
     protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
-        SensorEvent sensor = protoMapper.mapSwitchSensorProtoToModel(sensorProto.getSwitchSensorEvent());
+        SensorEvent sensor = protoMapper.mapSwitchSensorProtoToModel(sensorProto.getSwitchSensor());
         return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
     }
 }
