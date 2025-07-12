@@ -22,6 +22,7 @@ import ru.yandex.practicum.model.hub.enums.ActionType;
 import ru.yandex.practicum.model.hub.enums.ConditionOperation;
 import ru.yandex.practicum.model.hub.enums.ConditionType;
 
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface HubEventProtoMapper {
 
@@ -53,10 +54,10 @@ public interface HubEventProtoMapper {
 
     @Named("mapScenarioConditionProtoValueToModelValue")
     default Object mapScenarioConditionProtoValueToModelValue(ScenarioConditionProto proto) {
-        if (proto.hasIntValue()) {
-            return proto.getIntValue();
-        } else if (proto.hasBoolValue()) {
+        if (proto.hasBoolValue()) {
             return proto.getBoolValue();
+        } else if (proto.hasIntValue()) {
+            return proto.getIntValue();
         } else {
             return null;
         }

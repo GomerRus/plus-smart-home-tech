@@ -13,6 +13,8 @@ import ru.yandex.practicum.model.sensor.MotionSensorEvent;
 import ru.yandex.practicum.model.sensor.SwitchSensorEvent;
 import ru.yandex.practicum.model.sensor.TemperatureSensorEvent;
 
+import java.time.Instant;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SensorEventProtoMapper {
 

@@ -19,7 +19,7 @@ public class LightSensorHandler extends BaseSensorHandler {
     }
 
     public SensorEventProto.PayloadCase getMessageSensorType() {
-        return SensorEventProto.PayloadCase.LIGHT_SENSOR;
+        return SensorEventProto.PayloadCase.LIGHT_SENSOR_EVENT;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class LightSensorHandler extends BaseSensorHandler {
 
     @Override
     protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
-        SensorEvent sensor = protoMapper.mapLightSensorProtoToModel(sensorProto.getLightSensor());
+        SensorEvent sensor = protoMapper.mapLightSensorProtoToModel(sensorProto.getLightSensorEvent());
         return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
     }
 }

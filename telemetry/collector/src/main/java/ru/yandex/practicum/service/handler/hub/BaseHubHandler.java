@@ -52,12 +52,12 @@ public abstract class BaseHubHandler implements HubEventHandler {
     }
 
     protected HubEvent mapBaseHubProtoFieldsToHub(HubEvent hub, HubEventProto hubProto) {
-        if (hubProto == null) {
-            return null;
-        }
-        Instant timestamp = Instant.ofEpochSecond(hubProto.getTimestamp().getSeconds());
-        hub.setHubId(hub.getHubId());
-        hub.setTimestamp(timestamp);
+        hub.setHubId(hubProto.getHubId());
+
+        long seconds = hubProto.getTimestamp().getSeconds();
+        int nanos = hubProto.getTimestamp().getNanos();
+
+        hub.setTimestamp(Instant.ofEpochSecond(seconds, nanos));
         return hub;
     }
 

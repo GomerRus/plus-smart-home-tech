@@ -9,6 +9,7 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+
 import ru.yandex.practicum.service.handler.hub.HubEventHandler;
 import ru.yandex.practicum.service.handler.sensor.SensorEventHandler;
 
@@ -24,16 +25,19 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     private final Map<HubEventProto.PayloadCase, HubEventHandler> hubMapHandlers;
     private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorMapHandlers;
 
+
     public EventController(Set<HubEventHandler> hubSetHandlers, Set<SensorEventHandler> sensorSetHandlers) {
         this.hubMapHandlers = hubSetHandlers.stream()
                 .collect(Collectors.toMap(
                         HubEventHandler::getMessageHubType,
-                        Function.identity()));
-
+                        Function.identity()
+                ));
         this.sensorMapHandlers = sensorSetHandlers.stream()
                 .collect(Collectors.toMap(
                         SensorEventHandler::getMessageSensorType,
-                        Function.identity()));
+                        Function.identity()
+                ));
+
     }
 
     @Override
