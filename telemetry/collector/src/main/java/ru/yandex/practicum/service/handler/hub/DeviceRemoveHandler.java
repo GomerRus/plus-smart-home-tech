@@ -6,15 +6,16 @@ import ru.yandex.practicum.kafka.KafkaEventProducer;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.model.hub.DeviceRemovedEvent;
+import ru.yandex.practicum.model.hub.HubEvent;
+import ru.yandex.practicum.service.mapper.hub.HubEventAvroMapper;
 import ru.yandex.practicum.service.mapper.hub.HubEventProtoMapper;
 
 @Component
 public class DeviceRemoveHandler extends BaseHubHandler {
 
-    public DeviceRemoveHandler(KafkaEventProducer producer,
-                               KafkaTopicsNames topicsNames,
-                               HubEventProtoMapper protoMapper) {
-        super(producer, topicsNames, protoMapper);
+    public DeviceRemoveHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
+        super(producer, topicsNames, avroMapper, protoMapper);
     }
 
     @Override
@@ -22,9 +23,16 @@ public class DeviceRemoveHandler extends BaseHubHandler {
         return HubEventProto.PayloadCase.DEVICE_REMOVED;
     }
 
+
     @Override
-    protected HubEventAvro mapHubProtoToAvro(HubEventProto hubProto) {
-        DeviceRemovedEventAvro avro = protoMapper.mapDeviceRemovedProtoToModel(hubProto.getDeviceRemoved());
-        return buildHubEventAvro(hubProto, avro);
+    protected HubEventAvro mapHubToAvro(HubEvent hubEvent) {
+        DeviceRemovedEventAvro avro = avroMapper.mapDeviceRemoveToAvro((DeviceRemovedEvent) hubEvent);
+        return buildHubEventAvro(hubEvent, avro);
+    }
+
+    @Override
+    protected HubEvent mapHubProtoToModel(HubEventProto hubProto) {
+        HubEvent hub = protoMapper.mapDeviceRemovedProtoToModel(hubProto.getDeviceRemoved());
+        return mapBaseHubProtoFieldsToHub(hub, hubProto);
     }
 }
