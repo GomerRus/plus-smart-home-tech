@@ -7,7 +7,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-
 import ru.yandex.practicum.exception.errorHandler.KafkaSendException;
 
 @Slf4j
@@ -25,7 +24,6 @@ public class KafkaEventProducer implements DisposableBean {
         if (!param.isValid()) {
             throw new IllegalArgumentException("Недопустимый ProducerParam: " + param);
         }
-
         try {
             ProducerRecord<String, SpecificRecordBase> record = createProducerRecord(param);
             sendKafkaMessage(record);
