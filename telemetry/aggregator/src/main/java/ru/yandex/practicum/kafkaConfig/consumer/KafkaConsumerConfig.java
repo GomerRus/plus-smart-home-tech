@@ -17,7 +17,7 @@ public class KafkaConsumerConfig {
     private final Environment environment;
 
     @Bean
-    public Consumer<String, SpecificRecordBase> getConsumer() {
+    public KafkaConsumer<String, SpecificRecordBase> getConsumer() {
         Properties config = new Properties();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, environment.getProperty("spring.kafka.bootstrap-servers"));
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, environment.getProperty("spring.kafka.consumer.key-deserializer"));
