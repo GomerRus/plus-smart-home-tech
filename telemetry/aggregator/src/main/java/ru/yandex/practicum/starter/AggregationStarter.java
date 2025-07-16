@@ -33,10 +33,10 @@ public class AggregationStarter {
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
     @Value("${topic.telemetry-sensors}")
-    private String sensorsTopic;
+    private final String sensorsTopic;
 
     @Value("${aggregator.topic.telemetry-snapshots}")
-    private String snapshotsTopic;
+    private final String snapshotsTopic;
 
     public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
