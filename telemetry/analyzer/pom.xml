@@ -70,7 +70,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.analyzer.AnalyzerApplication</mainClass>
+                    <mainClass>ru.yandex.practicum.AnalyzerApplication</mainClass>
                     <layout>JAR</layout>
                 </configuration>
             </plugin>
