@@ -40,36 +40,45 @@ public class ScenarioAddedHandler implements HubEventHandler {
     @Transactional
     @Override
     public void handle(HubEventAvro hub) {
-        Scenario scenario = getScenario(hub);
-        removeExistingScenarioData(scenario);
-        processConditions(scenario, hub);
-        processActions(scenario, hub);
+        ScenarioAddedEventAvro scenarioAddedEvent = (ScenarioAddedEventAvro) hub.getPayload();
 
-    }
-
-    private ScenarioAddedEventAvro getScenarioAddedAvro(HubEventAvro hub) {
-        return (ScenarioAddedEventAvro) hub.getPayload();
-    }
-
-    private Scenario getScenario(HubEventAvro hub) {
-        ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
-        return scenarioRepository.findByHubIdAndName(hub.getHubId(),avro.getName() )
+        Scenario scenario = scenarioRepository
+                .findByHubIdAndName(hub.getHubId(), scenarioAddedEvent.getName())
                 .orElseGet(() -> scenarioRepository.save(
                         Scenario.builder()
                                 .hubId(hub.getHubId())
-                                .name(avro.getName())
+                                .name(scenarioAddedEvent.getName())
                                 .build()));
-    }
 
-    private void removeExistingScenarioData(Scenario scenario) {
         scenarioActionRepository.deleteByScenario(scenario);
         scenarioConditionRepository.deleteByScenario(scenario);
-    }
 
-    private void processActions(Scenario scenario, HubEventAvro hub) {
-        ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
+        scenarioAddedEvent.getConditions().forEach(cDto -> {
+            Sensor sensor = sensorRepository.findById(cDto.getSensorId())
+                    .orElseGet(() -> sensorRepository.save(
+                            Sensor.builder()
+                                    .id(cDto.getSensorId())
+                                    .hubId(hub.getHubId())
+                                    .build()));
+            Condition condition = conditionRepository.save(
+                    Condition.builder()
+                            .type(cDto.getType())
+                            .operation(cDto.getOperation())
+                            .value(convertValue(cDto.getValue()))
+                            .build());
+            scenarioConditionRepository.save(
+                    ScenarioCondition.builder()
+                            .scenario(scenario)
+                            .sensor(sensor)
+                            .condition(condition)
+                            .id(new ScenarioConditionId(
+                                    scenario.getId(),
+                                    sensor.getId(),
+                                    condition.getId()))
+                            .build());
+        });
 
-        avro.getActions().forEach(aDto -> {
+        scenarioAddedEvent.getActions().forEach(aDto -> {
             Sensor sensor = sensorRepository.findById(aDto.getSensorId())
                     .orElseGet(() -> sensorRepository.save(
                             Sensor.builder()
@@ -93,38 +102,6 @@ public class ScenarioAddedHandler implements HubEventHandler {
                             .build());
         });
     }
-
-    private void processConditions(Scenario scenario, HubEventAvro hub) {
-        ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
-
-        avro.getConditions().forEach(cDto -> {
-            Sensor sensor = sensorRepository.findById(cDto.getSensorId())
-                    .orElseGet(() -> sensorRepository.save(
-                            Sensor.builder()
-                                    .id(cDto.getSensorId())
-                                    .hubId(hub.getHubId())
-                                    .build()));
-
-            Condition condition = conditionRepository.save(
-                    Condition.builder()
-                            .type(cDto.getType())
-                            .operation(cDto.getOperation())
-                            .value(convertValue(cDto.getValue()))
-                            .build());
-
-            scenarioConditionRepository.save(
-                    ScenarioCondition.builder()
-                            .scenario(scenario)
-                            .sensor(sensor)
-                            .condition(condition)
-                            .id(new ScenarioConditionId(
-                                    scenario.getId(),
-                                    sensor.getId(),
-                                    condition.getId()))
-                            .build());
-        });
-    }
-
     private Integer convertValue(Object value) {
         return value instanceof Integer
                 ? (Integer) value

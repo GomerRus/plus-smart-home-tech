@@ -84,7 +84,7 @@ public class SnapshotHandler {
             case SWITCH -> handleOperation(condition,
                     ((SwitchSensorAvro) sensorState.getData()).getState() ? 1 : 0);
             case TEMPERATURE -> handleOperation(condition,
-                    ((TemperatureSensorAvro) sensorState.getData()).getTemperatureC());
+                    ((ClimateSensorAvro) sensorState.getData()).getTemperatureC());
             case CO2LEVEL -> handleOperation(condition,
                     ((ClimateSensorAvro) sensorState.getData()).getCo2Level());
             case HUMIDITY -> handleOperation(condition,
