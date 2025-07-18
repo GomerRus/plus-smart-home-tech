@@ -14,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Set;
@@ -22,7 +21,6 @@ import java.util.Set;
 @Entity
 @Table(name = "scenarios")
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

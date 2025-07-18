@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Getter
 @Component
 public class HubEventHandlerFactory {
-    Map<String, HubEventHandler> hubMap;
+    private  final Map<String, HubEventHandler> hubMap;
 
     public HubEventHandlerFactory(Set<HubEventHandler> hubSet) {
         this.hubMap = hubSet.stream()

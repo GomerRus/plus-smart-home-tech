@@ -39,6 +39,7 @@ public class HubEventProcessor implements Runnable {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
         try {
             consumer.subscribe(List.of(topic));
+            Map<String, HubEventHandler> handlerMap = handlerFactory.getHubMap();
             int count = 0;
 
             while (isRunning) {
@@ -46,7 +47,7 @@ public class HubEventProcessor implements Runnable {
                 ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(1000));
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    handleRecord(record);
+                    handleRecord(record,handlerMap);
                     manageOffsets(record, count);
                     count++;
                 }
@@ -74,8 +75,7 @@ public class HubEventProcessor implements Runnable {
         isRunning = false;
     }
 
-    private void handleRecord(ConsumerRecord<String, HubEventAvro> record) {
-        Map<String, HubEventHandler> handlerMap = handlerFactory.getHubMap();
+    private void handleRecord(ConsumerRecord<String, HubEventAvro> record,Map<String, HubEventHandler> handlerMap ) {
         HubEventAvro event = record.value();
         String payloadName = event.getPayload().getClass().getSimpleName();
         log.info("Получили сообщение HUB-a типа: {}", payloadName);

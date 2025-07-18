@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.model.Sensor;
 import ru.yandex.practicum.repository.SensorRepository;
 
 import java.util.Optional;
@@ -27,9 +26,8 @@ public class DeviceRemovedHandler implements HubEventHandler {
     @Override
     public void handle(HubEventAvro hub) {
         DeviceRemovedEventAvro deviceRemovedAvro = (DeviceRemovedEventAvro) hub.getPayload();
-        Optional<Sensor> sensor = sensorRepository.findByIdAndHubId(deviceRemovedAvro.getId(), hub.getHubId());
         log.info("Удаляем устройство из HUBa с ID = {}  с hub_id = {}", deviceRemovedAvro.getId(), hub.getHubId());
-        sensor.ifPresent(sensorRepository::delete);
+        sensorRepository.deleteByIdAndHubId(deviceRemovedAvro.getId(), hub.getHubId());
     }
 }
 
