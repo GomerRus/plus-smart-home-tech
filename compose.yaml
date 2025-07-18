@@ -34,7 +34,7 @@ services:
                              --bootstrap-server kafka:29092'"
     init: true
 
-    analyzer-db:
+  analyzer-db:
       image: postgres:16.1
       container_name: analyzer-db
       ports:
