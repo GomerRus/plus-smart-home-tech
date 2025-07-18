@@ -11,6 +11,7 @@ import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioCondition;
@@ -38,7 +39,10 @@ public class SnapshotHandler {
 
         scenariosList.stream()
                 .filter(scenario -> handleScenario(scenario, sensorStateMap))
-                .forEach(this::sendScenarioAction);
+                .forEach(scenario -> {
+                    log.info("Отправка действия для сценария {}", scenario.getName());
+                    sendScenarioAction(scenario);
+                });
     }
 
     private void sendScenarioAction(Scenario scenario) {
@@ -51,7 +55,7 @@ public class SnapshotHandler {
                 scenarioConditionRepository.findByScenario(scenario);
 
         return scenarioConditions.stream()
-                .allMatch(sc -> checkCondition(sc.getCondition(),
+                .noneMatch(sc -> !checkCondition(sc.getCondition(),
                         sc.getSensor().getId(),
                         sensorStateMap));
     }
@@ -80,7 +84,7 @@ public class SnapshotHandler {
             case SWITCH -> handleOperation(condition,
                     ((SwitchSensorAvro) sensorState.getData()).getState() ? 1 : 0);
             case TEMPERATURE -> handleOperation(condition,
-                    ((ClimateSensorAvro) sensorState.getData()).getTemperatureC());
+                    ((TemperatureSensorAvro) sensorState.getData()).getTemperatureC());
             case CO2LEVEL -> handleOperation(condition,
                     ((ClimateSensorAvro) sensorState.getData()).getCo2Level());
             case HUMIDITY -> handleOperation(condition,

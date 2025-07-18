@@ -40,7 +40,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
     @Transactional
     @Override
     public void handle(HubEventAvro hub) {
-        Scenario scenario = getOrCreateScenario(hub);
+        Scenario scenario = getScenario(hub);
         removeExistingScenarioData(scenario);
         processConditions(scenario, hub);
         processActions(scenario, hub);
@@ -51,7 +51,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
         return (ScenarioAddedEventAvro) hub.getPayload();
     }
 
-    private Scenario getOrCreateScenario(HubEventAvro hub) {
+    private Scenario getScenario(HubEventAvro hub) {
         ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
         return scenarioRepository.findByHubIdAndName(hub.getHubId(),avro.getName() )
                 .orElseGet(() -> scenarioRepository.save(
