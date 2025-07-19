@@ -28,15 +28,18 @@ public class SnapshotProcessor {
     private String topic;
 
     public void start() {
-        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
-
         try {
             consumer.subscribe(List.of(topic));
+            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
             while (isRunning) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
-                consumer.commitSync();
+               // consumer.commitSync();
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    handleRecord(record);
+                    SensorsSnapshotAvro snapshot = record.value();
+                    snapshotHandler.handle(snapshot);
+                }
+                if (!records.isEmpty()) {
+                    consumer.commitSync();
                 }
             }
             log.info("PoolLoop остановлен вручную");
@@ -45,8 +48,12 @@ public class SnapshotProcessor {
         } catch (Exception exp) {
             log.error("Ошибка во время обработки событий от датчиков", exp);
         } finally {
-            log.info("Закрываем Consumer");
-            consumer.close();
+            try {
+                log.info("Закрываем Consumer");
+                consumer.close();
+            } catch (Exception exp){
+                log.warn("Ошибка при закрытии CONSUMER-a", exp);
+            }
         }
     }
 

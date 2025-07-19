@@ -8,8 +8,6 @@ import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.repository.SensorRepository;
 
-import java.util.Optional;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor

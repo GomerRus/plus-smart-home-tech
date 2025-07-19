@@ -36,6 +36,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
     public String getPayloadType() {
         return ScenarioAddedEventAvro.class.getSimpleName();
     }
+
     @Override
     public void handle(HubEventAvro hub) {
         Scenario scenario = getScenario(hub);
@@ -43,22 +44,26 @@ public class ScenarioAddedHandler implements HubEventHandler {
         processConditions(scenario, hub);
         processActions(scenario, hub);
     }
+
     private ScenarioAddedEventAvro getScenarioAddedAvro(HubEventAvro hub) {
         return (ScenarioAddedEventAvro) hub.getPayload();
     }
+
     private Scenario getScenario(HubEventAvro hub) {
         ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
-        return scenarioRepository.findByHubIdAndName(hub.getHubId(),avro.getName() )
+        return scenarioRepository.findByHubIdAndName(hub.getHubId(), avro.getName())
                 .orElseGet(() -> scenarioRepository.save(
                         Scenario.builder()
                                 .hubId(hub.getHubId())
                                 .name(avro.getName())
                                 .build()));
     }
+
     private void removeExistingScenarioData(Scenario scenario) {
         scenarioActionRepository.deleteByScenario(scenario);
         scenarioConditionRepository.deleteByScenario(scenario);
     }
+
     private void processActions(Scenario scenario, HubEventAvro hub) {
         ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
         avro.getActions().forEach(aDto -> {
@@ -85,6 +90,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
                             .build());
         });
     }
+
     private void processConditions(Scenario scenario, HubEventAvro hub) {
         ScenarioAddedEventAvro avro = getScenarioAddedAvro(hub);
         avro.getConditions().forEach(cDto -> {
@@ -112,6 +118,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
                             .build());
         });
     }
+
     private Integer convertValue(Object value) {
         return value instanceof Integer
                 ? (Integer) value

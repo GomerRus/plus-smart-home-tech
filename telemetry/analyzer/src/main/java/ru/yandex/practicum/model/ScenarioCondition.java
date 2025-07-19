@@ -23,24 +23,23 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ScenarioCondition {
     @EmbeddedId
     ScenarioConditionId id;
 
     @MapsId("scenarioId")
-    @JoinColumn(name = "scenario_id")
+   // @JoinColumn(name = "scenario_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Scenario scenario;
 
     @MapsId("sensorId")
-    @JoinColumn(name = "sensor_id")
+  //  @JoinColumn(name = "sensor_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Sensor sensor;
 
     @MapsId("conditionId")
-    @JoinColumn(name = "condition_id")
+  //  @JoinColumn(name = "condition_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Condition condition;
 }
