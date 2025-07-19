@@ -11,7 +11,6 @@ import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioCondition;
@@ -77,18 +76,30 @@ public class SnapshotHandler {
             return false;
         }
         return switch (condition.getType()) {
-            case MOTION -> handleOperation(condition,
-                    ((MotionSensorAvro) sensorState.getData()).getMotion() ? 1 : 0);
-            case LUMINOSITY -> handleOperation(condition,
-                    ((LightSensorAvro) sensorState.getData()).getLuminosity());
-            case SWITCH -> handleOperation(condition,
-                    ((SwitchSensorAvro) sensorState.getData()).getState() ? 1 : 0);
-            case TEMPERATURE -> handleOperation(condition,
-                    ((ClimateSensorAvro) sensorState.getData()).getTemperatureC());
-            case CO2LEVEL -> handleOperation(condition,
-                    ((ClimateSensorAvro) sensorState.getData()).getCo2Level());
-            case HUMIDITY -> handleOperation(condition,
-                    ((ClimateSensorAvro) sensorState.getData()).getHumidity());
+            case MOTION -> {
+                MotionSensorAvro motion = (MotionSensorAvro) sensorState.getData();
+                yield handleOperation(condition, motion.getMotion() ? 1 : 0);
+            }
+            case LUMINOSITY -> {
+                LightSensorAvro light = (LightSensorAvro) sensorState.getData();
+                yield handleOperation(condition, light.getLuminosity());
+            }
+            case SWITCH -> {
+                SwitchSensorAvro sw = (SwitchSensorAvro) sensorState.getData();
+                yield handleOperation(condition, sw.getState() ? 1 : 0);
+            }
+            case TEMPERATURE -> {
+                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
+                yield handleOperation(condition, climate.getTemperatureC());
+            }
+            case CO2LEVEL -> {
+                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
+                yield handleOperation(condition, climate.getCo2Level());
+            }
+            case HUMIDITY -> {
+                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
+                yield handleOperation(condition, climate.getHumidity());
+            }
         };
     }
 }
