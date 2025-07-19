@@ -27,7 +27,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AggregationStarter implements CommandLineRunner {
+public class AggregationStarter {
     private final Consumer<String, SpecificRecordBase> consumer;
     private final Producer<String, SpecificRecordBase> producer;
     private final AggregationEventSnapshot aggregationSnapshot;
@@ -39,8 +39,7 @@ public class AggregationStarter implements CommandLineRunner {
     @Value("${aggregator.topic.telemetry-snapshots}")
     private String snapshotsTopic;
 
-    @Override
-    public void run(String... args) {
+    public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
         try {
             consumer.subscribe(List.of(sensorsTopic));

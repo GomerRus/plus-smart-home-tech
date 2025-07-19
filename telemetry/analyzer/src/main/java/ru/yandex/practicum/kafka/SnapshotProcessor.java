@@ -33,10 +33,8 @@ public class SnapshotProcessor {
         try {
             consumer.subscribe(List.of(topic));
             while (isRunning) {
-
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
                 consumer.commitSync();
-
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     handleRecord(record);
                 }
