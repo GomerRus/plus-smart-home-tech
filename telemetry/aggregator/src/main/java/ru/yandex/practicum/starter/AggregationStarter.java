@@ -42,20 +42,21 @@ public class AggregationStarter {
     private String snapshotsTopic;
 
     public void start() {
-        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
         try {
             consumer.subscribe(List.of(sensorsTopic));
+            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
             while (running) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
-                int count = 0;
+                // int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
                     log.info("Обрабатываем очередное сообщение {}", record.value());
                     handleRecord(record);
-                    manageOffsets(record, count);
-                    count++;
+                   // manageOffsets(record, count);
+                   // count++;
                 }
-                consumer.commitAsync();
+               // consumer.commitAsync();
+                consumer.commitSync();
             }
         } catch (WakeupException ignores) {
         } catch (Exception e) {

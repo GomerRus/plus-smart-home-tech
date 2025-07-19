@@ -43,14 +43,15 @@ public class HubEventProcessor implements Runnable {
 
             while (isRunning) {
                 ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(1000));
-                int count = 0;
+                //  int count = 0;
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
                     handleRecord(record,handlerMap);
-                    manageOffsets(record, count);
-                    count++;
+                  //  manageOffsets(record, count);
+                   // count++;
                 }
-                consumer.commitAsync();
+              //  consumer.commitAsync();
+                consumer.commitSync();
             }
             log.info("PoolLoop остановлен вручную");
         } catch (WakeupException ignored) {

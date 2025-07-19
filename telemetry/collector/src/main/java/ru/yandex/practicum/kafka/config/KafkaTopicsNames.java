@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "kafka.topic.telemetry")
+//@ConfigurationProperties(prefix = "kafka.topic.telemetry")
 public class KafkaTopicsNames {
     private String sensorsTopic;
     private String hubsTopic;

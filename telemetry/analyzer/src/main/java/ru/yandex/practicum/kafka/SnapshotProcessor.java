@@ -28,9 +28,10 @@ public class SnapshotProcessor {
     private String topic;
 
     public void start() {
+        consumer.subscribe(List.of(topic));
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+
         try {
-            consumer.subscribe(List.of(topic));
-            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
             while (isRunning) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
                // consumer.commitSync();
