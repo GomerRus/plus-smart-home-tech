@@ -2,6 +2,7 @@ package ru.yandex.practicum.service.handler.hub;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.kafka.config.KafkaConfig;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
@@ -13,10 +14,14 @@ import ru.yandex.practicum.service.mapper.hub.HubEventProtoMapper;
 
 @Component
 public class DeviceAddedHandler extends BaseHubHandler {
-
-    public DeviceAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
-        super(producer, topicsNames, avroMapper, protoMapper);
+    public DeviceAddedHandler(KafkaEventProducer producer, KafkaConfig kafkaProducerConfig, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
+        super(producer, kafkaProducerConfig, avroMapper, protoMapper);
     }
+
+
+   /* public DeviceAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
+        super(producer, topicsNames, avroMapper, protoMapper);
+    }*/
 
     @Override
     public HubEventProto.PayloadCase getMessageHubType() {

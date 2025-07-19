@@ -79,9 +79,15 @@ message DeviceActionProto {
   optional int32 value = 3;
 }
 
-
 message ScenarioAddedEventProto {
   string name = 1;
   repeated ScenarioConditionProto conditions = 2;
   repeated DeviceActionProto actions = 3;
+}
+
+message DeviceActionRequest {
+  string hub_id = 1;
+  string scenario_name = 2;
+  DeviceActionProto action = 3;
+  google.protobuf.Timestamp timestamp = 4;
 }

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.starter;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -12,6 +13,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.aggregation.AggregationEventSnapshot;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
@@ -31,6 +33,7 @@ public class AggregationStarter {
     private final Producer<String, SpecificRecordBase> producer;
     private final AggregationEventSnapshot aggregationSnapshot;
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+    private volatile boolean running = true;
 
     @Value("${topic.telemetry-sensors}")
     private String sensorsTopic;
@@ -39,20 +42,21 @@ public class AggregationStarter {
     private String snapshotsTopic;
 
     public void start() {
-        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
         try {
             consumer.subscribe(List.of(sensorsTopic));
+            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
-            while (!Thread.currentThread().isInterrupted()) {
+            while (running) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
-                int count = 0;
+                // int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
                     log.info("Обрабатываем очередное сообщение {}", record.value());
                     handleRecord(record);
-                    manageOffsets(record, count, consumer);
-                    count++;
+                   // manageOffsets(record, count);
+                   // count++;
                 }
-                consumer.commitAsync();
+               // consumer.commitAsync();
+                consumer.commitSync();
             }
         } catch (WakeupException ignores) {
         } catch (Exception e) {
@@ -70,16 +74,23 @@ public class AggregationStarter {
         }
     }
 
+    @PreDestroy
+    public void shutdown() {
+        consumer.wakeup();
+        running = false;
+    }
+
     private void handleRecord(ConsumerRecord<String, SpecificRecordBase> record) {
         log.info("топик = {}, партиция = {}, смещение = {}, значение: {}",
                 record.topic(), record.partition(), record.offset(), record.value());
         SensorEventAvro event = (SensorEventAvro) record.value();
-        Optional<SensorsSnapshotAvro> snapshot = aggregationSnapshot.updateState(event);
-        log.info("Получили снимок состояния {}", snapshot);
-        if (snapshot.isPresent()) {
+        Optional<SensorsSnapshotAvro> snapshotOpt = aggregationSnapshot.updateState(event);
+        log.info("Получили снимок состояния {}", snapshotOpt);
+        if (snapshotOpt.isPresent()) {
+            SensorsSnapshotAvro snapshot = snapshotOpt.get();
             log.info("Запись в топик Kafka");
             ProducerRecord<String, SpecificRecordBase> producerRecord = new ProducerRecord<>(snapshotsTopic,
-                    null, event.getTimestamp().toEpochMilli(), event.getHubId(), snapshot.get());
+                    null, snapshot.getTimestamp().toEpochMilli(), snapshot.getHubId(), snapshot);
 
             producer.send(producerRecord);
             log.info("SNAPSHOT обновлен и отправлен {}", snapshot);
@@ -88,7 +99,7 @@ public class AggregationStarter {
         }
     }
 
-    private void manageOffsets(ConsumerRecord<String, SpecificRecordBase> record, int count, Consumer<String, SpecificRecordBase> consumer) {
+    private void manageOffsets(ConsumerRecord<String, SpecificRecordBase> record, int count) {
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
                 new OffsetAndMetadata(record.offset() + 1)
@@ -102,5 +113,4 @@ public class AggregationStarter {
             });
         }
     }
-
 }
