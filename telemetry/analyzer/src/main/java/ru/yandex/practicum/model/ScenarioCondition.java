@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,17 +28,17 @@ public class ScenarioCondition {
     ScenarioConditionId id;
 
     @MapsId("scenarioId")
-   // @JoinColumn(name = "scenario_id")
+    @JoinColumn(name = "scenario_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Scenario scenario;
 
     @MapsId("sensorId")
-  //  @JoinColumn(name = "sensor_id")
+    @JoinColumn(name = "sensor_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Sensor sensor;
 
     @MapsId("conditionId")
-  //  @JoinColumn(name = "condition_id")
+    @JoinColumn(name = "condition_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Condition condition;
 }

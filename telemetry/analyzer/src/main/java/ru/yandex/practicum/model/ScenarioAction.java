@@ -29,17 +29,17 @@ public class ScenarioAction {
     ScenarioActionId id;
 
     @MapsId("scenarioId")
-    // @JoinColumn(name = "scenario_id")
+    @JoinColumn(name = "scenario_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Scenario scenario;
 
     @MapsId("sensorId")
-  //  @JoinColumn(name = "sensor_id")
+    @JoinColumn(name = "sensor_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Sensor sensor;
 
     @MapsId("actionId")
-   // @JoinColumn(name = "action_id")
+    @JoinColumn(name = "action_id")
     @ManyToOne(fetch = FetchType.LAZY)
     Action action;
 }

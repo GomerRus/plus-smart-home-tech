@@ -39,7 +39,7 @@ public class SnapshotHandler {
         scenariosList.stream()
                 .filter(scenario -> handleScenario(scenario, sensorStateMap))
                 .forEach(scenario -> {
-                    log.info("Отправка действия для сценария {}", scenario.getName());
+                    log.info("Отправка ДЕЙСТВИЯ для сценария {}", scenario.getName());
                     sendScenarioAction(scenario);
                 });
     }

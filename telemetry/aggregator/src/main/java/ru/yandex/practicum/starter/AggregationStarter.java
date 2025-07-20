@@ -15,7 +15,7 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.aggregation.AggregationEventSnapshot;
+import ru.yandex.practicum.aggregation.AggregationEventSnapshotImpl;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
@@ -28,10 +28,10 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AggregationStarter {
+public class AggregationStarter implements CommandLineRunner {
     private final Consumer<String, SpecificRecordBase> consumer;
     private final Producer<String, SpecificRecordBase> producer;
-    private final AggregationEventSnapshot aggregationSnapshot;
+    private final AggregationEventSnapshotImpl aggregationSnapshot;
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private volatile boolean running = true;
 
@@ -41,22 +41,23 @@ public class AggregationStarter {
     @Value("${aggregator.topic.telemetry-snapshots}")
     private String snapshotsTopic;
 
-    public void start() {
+
+    @Override
+    public void run(String... args) {
         try {
             consumer.subscribe(List.of(sensorsTopic));
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
             while (running) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
-                // int count = 0;
+                int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
                     log.info("Обрабатываем очередное сообщение {}", record.value());
                     handleRecord(record);
-                   // manageOffsets(record, count);
-                   // count++;
+                    manageOffsets(record, count);
+                    count++;
                 }
-               // consumer.commitAsync();
-                consumer.commitSync();
+                consumer.commitAsync();
             }
         } catch (WakeupException ignores) {
         } catch (Exception e) {

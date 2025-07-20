@@ -19,6 +19,7 @@ import java.time.Instant;
 @Slf4j
 @Service
 public class HubRouterClient {
+
     private final HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouter;
 
     public HubRouterClient(@GrpcClient("hub-router") HubRouterControllerGrpc.HubRouterControllerBlockingStub hub) {

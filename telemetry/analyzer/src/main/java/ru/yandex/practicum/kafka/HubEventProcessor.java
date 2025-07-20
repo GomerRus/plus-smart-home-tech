@@ -28,8 +28,8 @@ public class HubEventProcessor implements Runnable {
 
     private final Consumer<String, HubEventAvro> consumer;
     private final HubEventHandlerFactory handlerFactory;
-   // private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
-   // private volatile boolean isRunning = true;
+    private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+    private volatile boolean isRunning = true;
 
     @Value("${analyzer.topic.hub-event-topic}")
     private String topic;
@@ -41,19 +41,18 @@ public class HubEventProcessor implements Runnable {
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
             Map<String, HubEventHandler> handlerMap = handlerFactory.getHubMap();
 
-            while (true) {
+            while (isRunning) {
                 ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(1000));
-                //  int count = 0;
+                int count = 0;
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    handleRecord(record,handlerMap);
-                  //  manageOffsets(record, count);
-                   // count++;
+                    handleRecord(record, handlerMap);
+                    manageOffsets(record, count);
+                    count++;
                 }
-              //  consumer.commitAsync();
-                consumer.commitSync();
+                consumer.commitAsync();
             }
-           // log.info("PoolLoop остановлен вручную");
+            log.info("PoolLoop остановлен вручную");
         } catch (WakeupException ignored) {
             log.warn("Возник WakeupException");
         } catch (Exception exp) {
@@ -68,13 +67,13 @@ public class HubEventProcessor implements Runnable {
         }
     }
 
-   /* @PreDestroy
+    @PreDestroy
     public void shutdown() {
         consumer.wakeup();
         isRunning = false;
-    }*/
+    }
 
-    private void handleRecord(ConsumerRecord<String, HubEventAvro> record,Map<String, HubEventHandler> handlerMap ) {
+    private void handleRecord(ConsumerRecord<String, HubEventAvro> record, Map<String, HubEventHandler> handlerMap) {
         HubEventAvro event = record.value();
         String payloadName = event.getPayload().getClass().getSimpleName();
         log.info("Получили сообщение HUB-a типа: {}", payloadName);
@@ -86,7 +85,7 @@ public class HubEventProcessor implements Runnable {
         }
     }
 
-   /* private void manageOffsets(ConsumerRecord<String, HubEventAvro> record, int count) {
+    private void manageOffsets(ConsumerRecord<String, HubEventAvro> record, int count) {
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
                 new OffsetAndMetadata(record.offset() + 1));
@@ -106,5 +105,5 @@ public class HubEventProcessor implements Runnable {
                 }
             });
         }
-    }*/
+    }
 }
