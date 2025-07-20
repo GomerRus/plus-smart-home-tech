@@ -11,17 +11,13 @@ import java.util.Optional;
 
 @Component
 public class AggregationEventSnapshotImpl implements AggregationEventSnapshot {
-
     private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
     public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
         String hubId = event.getHubId();
-
         if (!snapshots.containsKey(hubId)) {
             SensorsSnapshotAvro snapshot = createNewSnapshot(event);
-
             snapshots.put(hubId, snapshot);
-
             return Optional.of(snapshot);
         } else {
             SensorsSnapshotAvro oldSnapshot = snapshots.get(hubId);
@@ -33,7 +29,6 @@ public class AggregationEventSnapshotImpl implements AggregationEventSnapshot {
 
     private Optional<SensorsSnapshotAvro> updateSnapshot(SensorsSnapshotAvro oldSnapshot, SensorEventAvro event) {
         String sensorId = event.getId();
-
         if (oldSnapshot.getSensorsState().containsKey(sensorId)) {
             if (oldSnapshot.getSensorsState().get(sensorId).getTimestamp().isAfter(event.getTimestamp()) ||
                     oldSnapshot.getSensorsState().get(sensorId).getData().equals(event.getPayload())) {
@@ -41,10 +36,8 @@ public class AggregationEventSnapshotImpl implements AggregationEventSnapshot {
             }
         }
         SensorStateAvro sensorState = createSensorState(event);
-
         oldSnapshot.getSensorsState().put(sensorId, sensorState);
         oldSnapshot.setTimestamp(event.getTimestamp());
-
         return Optional.of(oldSnapshot);
     }
 
