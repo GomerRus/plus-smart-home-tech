@@ -14,14 +14,10 @@ import ru.yandex.practicum.service.mapper.hub.HubEventProtoMapper;
 
 @Component
 public class ScenarioAddedHandler extends BaseHubHandler {
-    public ScenarioAddedHandler(KafkaEventProducer producer, KafkaConfig kafkaProducerConfig, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
-        super(producer, kafkaProducerConfig, avroMapper, protoMapper);
-    }
 
-
-   /* public ScenarioAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
+    public ScenarioAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
         super(producer, topicsNames, avroMapper, protoMapper);
-    }*/
+    }
 
     @Override
     public HubEventProto.PayloadCase getMessageHubType() {

@@ -19,8 +19,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public abstract class BaseSensorHandler implements SensorEventHandler {
     protected final KafkaEventProducer producer;
-   protected final KafkaConfig kafkaProducerConfig;
-   // protected final KafkaTopicsNames topicsNames;
+    protected final KafkaTopicsNames topicsNames;
     protected final SensorEventAvroMapper avroMapper;
     protected final SensorEventProtoMapper protoMapper;
 
@@ -65,8 +64,7 @@ public abstract class BaseSensorHandler implements SensorEventHandler {
 
     private ProducerParam createProducerParam(SensorEvent event, SensorEventAvro avro) {
         return ProducerParam.builder()
-              //  .topic(topicsNames.getSensorsTopic())
-                .topic(kafkaProducerConfig.getSensorsTopic())
+                .topic(topicsNames.getSensorsTopic())
                 .timestamp(event.getTimestamp().toEpochMilli())
                 .key(event.getHubId())
                 .value(avro)

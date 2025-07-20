@@ -1,52 +1,21 @@
 package ru.yandex.practicum.kafka;
 
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.exception.errorHandler.KafkaSendException;
-import ru.yandex.practicum.kafka.config.KafkaConfig;
 
 @Slf4j
 @Component
-public class KafkaEventProducer {// implements DisposableBean {
-    // private final KafkaTemplate<String, SpecificRecordBase> kafkaTemplate;
-    private final Producer<String, SpecificRecordBase> producer;
-    private KafkaEventProducer(KafkaConfig kafkaProducerConfig) {
-        this.producer = new KafkaProducer<>(kafkaProducerConfig.getProperties());
-    }
-    public void sendRecord(ProducerParam param) {
-        if (!param.isValid()) {
-            throw new IllegalArgumentException("invalid ProducerSendParam=" + param);
-        }
+public class KafkaEventProducer  implements DisposableBean {
+     private final KafkaTemplate<String, SpecificRecordBase> kafkaTemplate;
+    private final Producer<String, SpecificRecordBase> kafkaProducer;
 
-        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
-                param.getTopic(),
-                param.getPartition(),
-                param.getTimestamp(),
-                param.getKey(),
-                param.getValue());
-
-        producer.send(record);
-    }
-
-    @PreDestroy
-    private void close() {
-        if (producer != null) {
-            producer.flush();
-            producer.close();
-        }
-    }
-}
-
-
-
-   /* public KafkaEventProducer(KafkaTemplate<String, SpecificRecordBase> kafkaTemplate, Producer<String, SpecificRecordBase> kafkaProducer) {
+    public KafkaEventProducer(KafkaTemplate<String, SpecificRecordBase> kafkaTemplate, Producer<String, SpecificRecordBase> kafkaProducer) {
         this.kafkaTemplate = kafkaTemplate;
         this.kafkaProducer = kafkaProducer;
     }
@@ -97,4 +66,4 @@ public class KafkaEventProducer {// implements DisposableBean {
             throw e;
         }
     }
-}*/
+}

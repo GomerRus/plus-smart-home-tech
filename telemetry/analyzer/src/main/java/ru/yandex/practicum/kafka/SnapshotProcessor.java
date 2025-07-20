@@ -32,22 +32,23 @@ public class SnapshotProcessor {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
         try {
-            while (isRunning) {
+            while (true) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
                // consumer.commitSync();
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     SensorsSnapshotAvro snapshot = record.value();
+                    log.info("Получили SNAPSHOT состояния умного дома: {}", snapshot);
                     snapshotHandler.handle(snapshot);
                 }
                 if (!records.isEmpty()) {
                     consumer.commitSync();
                 }
             }
-            log.info("PoolLoop остановлен вручную");
+           // log.info("PoolLoop остановлен вручную");
         } catch (WakeupException ignored) {
             log.warn("Возник WakeupException");
         } catch (Exception exp) {
-            log.error("Ошибка во время обработки событий от датчиков", exp);
+            log.error("Ошибка чтения данных из топика {}", topic, exp);
         } finally {
             try {
                 log.info("Закрываем Consumer");
@@ -58,7 +59,7 @@ public class SnapshotProcessor {
         }
     }
 
-    @PreDestroy
+  /*  @PreDestroy
     public void shutdown() {
         consumer.wakeup();
         isRunning = false;
@@ -68,5 +69,5 @@ public class SnapshotProcessor {
         SensorsSnapshotAvro snapshot = record.value();
         log.info("Получили SNAPSHOT состояния умного дома: {}", snapshot);
         snapshotHandler.handle(snapshot);
-    }
+    }*/
 }

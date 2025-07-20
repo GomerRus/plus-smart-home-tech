@@ -84,13 +84,12 @@ public class AggregationStarter {
         log.info("топик = {}, партиция = {}, смещение = {}, значение: {}",
                 record.topic(), record.partition(), record.offset(), record.value());
         SensorEventAvro event = (SensorEventAvro) record.value();
-        Optional<SensorsSnapshotAvro> snapshotOpt = aggregationSnapshot.updateState(event);
-        log.info("Получили снимок состояния {}", snapshotOpt);
-        if (snapshotOpt.isPresent()) {
-            SensorsSnapshotAvro snapshot = snapshotOpt.get();
+        Optional<SensorsSnapshotAvro> snapshot = aggregationSnapshot.updateState(event);
+        log.info("Получили снимок состояния {}", snapshot);
+        if (snapshot.isPresent()) {
             log.info("Запись в топик Kafka");
             ProducerRecord<String, SpecificRecordBase> producerRecord = new ProducerRecord<>(snapshotsTopic,
-                    null, snapshot.getTimestamp().toEpochMilli(), snapshot.getHubId(), snapshot);
+                    null, event.getTimestamp().toEpochMilli(), event.getHubId(), snapshot.get());
 
             producer.send(producerRecord);
             log.info("SNAPSHOT обновлен и отправлен {}", snapshot);

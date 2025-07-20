@@ -29,17 +29,17 @@ import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 public class Condition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    // @Column(name = "id")
     Long id;
 
-    @Column(name = "type")
+    //@Column(name = "type")
     @Enumerated(EnumType.STRING)
     ConditionTypeAvro type;
 
-    @Column(name = "operation")
+   // @Column(name = "operation")
     @Enumerated(EnumType.STRING)
     ConditionOperationAvro operation;
 
-    @Column(name = "value")
+    //@Column(name = "value")
     Integer value;
 }

@@ -14,13 +14,9 @@ import ru.yandex.practicum.service.mapper.sensor.SensorEventProtoMapper;
 
 @Component
 public class LightSensorHandler extends BaseSensorHandler {
-    public LightSensorHandler(KafkaEventProducer producer, KafkaConfig kafkaProducerConfig, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
-        super(producer, kafkaProducerConfig, avroMapper, protoMapper);
-    }
-
-   /* public LightSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
+    public LightSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
         super(producer, topicsNames, avroMapper, protoMapper);
-    }*/
+    }
 
     public SensorEventProto.PayloadCase getMessageSensorType() {
         return SensorEventProto.PayloadCase.LIGHT_SENSOR_EVENT;

@@ -14,13 +14,9 @@ import ru.yandex.practicum.service.mapper.sensor.SensorEventProtoMapper;
 
 @Component
 public class TemperatureSensorHandler extends BaseSensorHandler {
-    public TemperatureSensorHandler(KafkaEventProducer producer, KafkaConfig kafkaProducerConfig, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
-        super(producer, kafkaProducerConfig, avroMapper, protoMapper);
-    }
-
-   /* public TemperatureSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
+     public TemperatureSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
         super(producer, topicsNames, avroMapper, protoMapper);
-    }*/
+    }
 
     @Override
     public SensorEventProto.PayloadCase getMessageSensorType() {

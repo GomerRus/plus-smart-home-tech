@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
+
 
 @Entity
 @Table(name = "actions")
@@ -28,14 +30,14 @@ import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 public class Action {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    //@Column(name = "id")
     Long id;
 
-    @Column(name = "type")
+    //@Column(name = "type")
     @Enumerated(EnumType.STRING)
     ActionTypeAvro type;
 
-    @Column(name = "value")
+   // @Column(name = "value")
     Integer value;
 
 }

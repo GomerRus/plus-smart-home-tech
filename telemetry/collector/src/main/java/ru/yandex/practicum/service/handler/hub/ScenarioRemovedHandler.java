@@ -14,14 +14,10 @@ import ru.yandex.practicum.service.mapper.hub.HubEventProtoMapper;
 
 @Component
 public class ScenarioRemovedHandler extends BaseHubHandler {
-    public ScenarioRemovedHandler(KafkaEventProducer producer, KafkaConfig kafkaProducerConfig, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
-        super(producer, kafkaProducerConfig, avroMapper, protoMapper);
-    }
 
-
-  /*  public ScenarioRemovedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
+    public ScenarioRemovedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
         super(producer, topicsNames, avroMapper, protoMapper);
-    }*/
+    }
 
     @Override
     public HubEventProto.PayloadCase getMessageHubType() {

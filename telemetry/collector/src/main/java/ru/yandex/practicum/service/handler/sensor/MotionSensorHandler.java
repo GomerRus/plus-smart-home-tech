@@ -14,13 +14,9 @@ import ru.yandex.practicum.service.mapper.sensor.SensorEventProtoMapper;
 
 @Component
 public class MotionSensorHandler extends BaseSensorHandler {
-    public MotionSensorHandler(KafkaEventProducer producer, KafkaConfig kafkaProducerConfig, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
-        super(producer, kafkaProducerConfig, avroMapper, protoMapper);
-    }
-
-  /*  public MotionSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
+      public MotionSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames, SensorEventAvroMapper avroMapper, SensorEventProtoMapper protoMapper) {
         super(producer, topicsNames, avroMapper, protoMapper);
-    }*/
+    }
 
     public SensorEventProto.PayloadCase getMessageSensorType() {
         return SensorEventProto.PayloadCase.MOTION_SENSOR_EVENT;

@@ -14,7 +14,8 @@ public abstract class BaseAvroDeserializer<T extends SpecificRecordBase> impleme
     private final DatumReader<T> datumReader;
 
     public BaseAvroDeserializer(Schema schema) {
-        this(DecoderFactory.get(), schema);
+        this.decoderFactory = DecoderFactory.get();
+        this.datumReader = new SpecificDatumReader<>(schema);
     }
 
     public BaseAvroDeserializer(DecoderFactory decoderFactory, Schema schema) {
@@ -24,14 +25,14 @@ public abstract class BaseAvroDeserializer<T extends SpecificRecordBase> impleme
 
     @Override
     public T deserialize(String topic, byte[] bytes) {
-        if (bytes == null) {
-            return null;
-        }
         try {
-            BinaryDecoder decoder = decoderFactory.binaryDecoder(bytes, null);
-            return datumReader.read(null, decoder);
+            if (bytes != null) {
+                BinaryDecoder decoder = decoderFactory.binaryDecoder(bytes, null);
+                return this.datumReader.read(null, decoder);
+            }
+            return null;
         } catch (Exception e) {
-            throw new SerializationException("Ошибка десериализации данных из топика [" + topic + "]", e);
+            throw new RuntimeException("Ошибка десериализации данных из топика [" + topic + "]", e);
         }
     }
 }

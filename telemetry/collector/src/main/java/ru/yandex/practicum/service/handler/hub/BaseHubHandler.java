@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
-import ru.yandex.practicum.kafka.config.KafkaConfig;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
 import ru.yandex.practicum.kafka.ProducerParam;
@@ -20,8 +19,7 @@ import java.time.Instant;
 public abstract class BaseHubHandler implements HubEventHandler {
 
     protected final KafkaEventProducer producer;
-   // protected final KafkaTopicsNames topicsNames;
-    protected final KafkaConfig kafkaProducerConfig;
+    protected final KafkaTopicsNames topicsNames;
     protected final HubEventAvroMapper avroMapper;
     protected final HubEventProtoMapper protoMapper;
 
@@ -65,8 +63,7 @@ public abstract class BaseHubHandler implements HubEventHandler {
 
     private ProducerParam createProducerSendParam(HubEvent event, HubEventAvro avro) {
         return ProducerParam.builder()
-               // .topic(topicsNames.getHubsTopic())
-                .topic(kafkaProducerConfig.getHubsTopic())
+                .topic(topicsNames.getHubsTopic())
                 .timestamp(event.getTimestamp().toEpochMilli())
                 .key(event.getHubId())
                 .value(avro)

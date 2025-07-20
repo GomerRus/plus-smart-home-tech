@@ -52,6 +52,8 @@ public class SnapshotHandler {
     private boolean handleScenario(Scenario scenario, Map<String, SensorStateAvro> sensorStateMap) {
         List<ScenarioCondition> scenarioConditions =
                 scenarioConditionRepository.findByScenario(scenario);
+        log.info("Получили СПИСОК условий {} у сценария name = {}",
+                scenarioConditions.size(), scenario.getName());
 
         return scenarioConditions.stream()
                 .noneMatch(sc -> !checkCondition(sc.getCondition(),
