@@ -14,7 +14,7 @@ import java.time.Instant;
 public abstract class BaseHubHandler implements HubEventHandler {
     private final KafkaEventProducer producer;
 
-    @Value("${topic.telemetry-hubs}")
+    @Value("${collector.kafka.topic.telemetry-hubs}")
     private String topic;
 
     @Override

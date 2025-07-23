@@ -62,6 +62,14 @@
         <artifactId>grpc-client-spring-boot-starter</artifactId>
         <version>3.1.0.RELEASE</version>
     </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-config</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.retry</groupId>
+        <artifactId>spring-retry</artifactId>
+    </dependency>
 </dependencies>
 
     <build>
