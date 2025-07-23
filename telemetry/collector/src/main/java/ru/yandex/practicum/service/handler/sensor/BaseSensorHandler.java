@@ -14,7 +14,7 @@ import java.time.Instant;
 public abstract class BaseSensorHandler implements SensorEventHandler {
     private final KafkaEventProducer producer;
 
-    @Value("${topic.telemetry-sensors}")
+    @Value("${collector.kafka.topic.telemetry-sensors}")
     private String topic;
 
     @Override

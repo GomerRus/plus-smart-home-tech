@@ -35,10 +35,10 @@ public class AggregationStarter implements CommandLineRunner {
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private volatile boolean running = true;
 
-    @Value("${topic.telemetry-sensors}")
+    @Value("${aggregator.kafka.topic.telemetry-sensors}")
     private String sensorsTopic;
 
-    @Value("${aggregator.topic.telemetry-snapshots}")
+    @Value("${aggregator.kafka.topic.telemetry-snapshots}")
     private String snapshotsTopic;
 
 
