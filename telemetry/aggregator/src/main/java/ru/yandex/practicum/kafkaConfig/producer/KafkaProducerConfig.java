@@ -16,6 +16,7 @@ import java.util.Properties;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
+
     @Autowired
     private final Environment environment;
 
