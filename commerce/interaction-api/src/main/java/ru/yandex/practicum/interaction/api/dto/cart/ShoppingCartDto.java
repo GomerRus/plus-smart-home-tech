@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingCartDto {
-    @NotBlank
+    @NotNull
     UUID shoppingCartId;
 
     @NotNull

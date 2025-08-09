@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddProductToWarehouseRequest {
-    @NotBlank
+    @NotNull
     UUID productId;
 
     @Min(1)
