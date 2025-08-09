@@ -38,8 +38,38 @@ services:
       image: postgres:16.1
       container_name: analyzer-db
       ports:
-        - "6432:5432"
+        - "6431:5432"
       environment:
-        - POSTGRES_DB=smart-home
+        - POSTGRES_DB=smart-home-telemetry-analyzer
         - POSTGRES_USER=username
         - POSTGRES_PASSWORD=password
+
+  commerce-cart-db:
+      image: postgres:16.1
+      container_name: commerce-cart-db
+      ports:
+        - "6432:5432"
+      environment:
+        - POSTGRES_DB=smart-home-commerce-cart
+        - POSTGRES_USER=username
+        - POSTGRES_PASSWORD=password
+
+  commerce-store-db:
+    image: postgres:16.1
+    container_name: commerce-store-db
+    ports:
+      - "6433:5432"
+    environment:
+      - POSTGRES_DB=smart-home-commerce-store
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+
+  commerce-warehouse-db:
+    image: postgres:16.1
+    container_name: commerce-warehouse-db
+    ports:
+      - "6435:5432"
+    environment:
+      - POSTGRES_DB=smart-home-commerce-warehouse
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
