@@ -48,7 +48,7 @@ public class ShoppingStoreController {
     }
 
     @PostMapping("/removeProductFromStore")
-    public Boolean removeProductById(@Valid @RequestBody UUID productId) {
+    public Boolean removeProductById(@RequestBody UUID productId) {
         log.info("Получен POST /api/v1/shopping-store запрос на деактивацию товара с ID = {}", productId);
         return storeService.removeProductById(productId);
     }
