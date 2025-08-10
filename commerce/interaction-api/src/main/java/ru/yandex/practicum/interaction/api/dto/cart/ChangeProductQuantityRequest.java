@@ -1,6 +1,5 @@
 package ru.yandex.practicum.interaction.api.dto.cart;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;

@@ -47,9 +47,9 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public ProductDto updateProduct(ProductDto productDto) {
-        getProduct(productDto.getProductId());
-        productRepository.deleteById(productDto.getProductId());
-        Product product = mapper.mapToProduct(productDto);
+        Product product = getProduct(productDto.getProductId());
+        mapper.updateProductFromDto(product, productDto);
+
         return mapper.mapToProductDto(productRepository.save(product));
     }
 
