@@ -39,8 +39,8 @@ public class ShoppingCart {
     @Column(name = "cart_id")
     UUID cartId;
 
-    @Column(name = "user_name", nullable = false, unique = true)
-    String userName;
+    @Column(name = "username", nullable = false, unique = true)
+    String username;
 
     @Column(name = "status")
     @Enumerated(value = EnumType.STRING)

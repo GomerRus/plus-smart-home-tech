@@ -28,21 +28,21 @@ public class CartServiceImpl implements CartService {
     private final ShoppingCartMapper mapper;
     private final WarehouseFeignClient warehouseFeignClient;
 
-    private void checkUsernameForEmpty(String userName) {
-        if (userName == null || userName.isBlank()) {
+    private void checkUsernameForEmpty(String username) {
+        if (username == null || username.isBlank()) {
             throw new NotAuthorizedUserException("Username is empty");
         }
     }
 
-    private ShoppingCart getActiveCart(String userName) {
-        return shoppingCartRepository.findByUserNameAndStatus(userName, ShoppingCartStatus.ACTIVE)
+    private ShoppingCart getActiveCart(String username) {
+        return shoppingCartRepository.findByUsernameAndStatus(username, ShoppingCartStatus.ACTIVE)
                 .orElseThrow(() -> new CartNotFoundException
-                        (String.format("У пользователя %s нет активной корзины.", userName)));
+                        (String.format("У пользователя %s нет активной корзины.", username)));
     }
 
-    private ShoppingCart createNewCart(String userName) {
+    private ShoppingCart createNewCart(String username) {
         ShoppingCart newCart = new ShoppingCart();
-        newCart.setUserName(userName);
+        newCart.setUsername(username);
         newCart.setStatus(ShoppingCartStatus.ACTIVE);
         newCart.setCartProducts(new HashMap<>());
         return shoppingCartRepository.save(newCart);
@@ -60,19 +60,19 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto getShoppingCart(String userName) {
-        checkUsernameForEmpty(userName);
-        ShoppingCart cart = shoppingCartRepository.findByUserNameAndStatus(userName, ShoppingCartStatus.ACTIVE)
-                .orElseGet(() -> createNewCart(userName));
+    public ShoppingCartDto getShoppingCart(String username) {
+        checkUsernameForEmpty(username);
+        ShoppingCart cart = shoppingCartRepository.findByUsernameAndStatus(username, ShoppingCartStatus.ACTIVE)
+                .orElseGet(() -> createNewCart(username));
 
         return mapper.mapToCartDto(cart);
     }
 
     @Override
     @Transactional
-    public ShoppingCartDto addProductInCart(String userName, Map<UUID, Integer> products) {
-        checkUsernameForEmpty(userName);
-        ShoppingCart cart = getActiveCart(userName);
+    public ShoppingCartDto addProductInCart(String username, Map<UUID, Integer> products) {
+        checkUsernameForEmpty(username);
+        ShoppingCart cart = getActiveCart(username);
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
         products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId, quantity, Integer::sum));
@@ -82,18 +82,18 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto deactivationShoppingCart(String userName) {
-        checkUsernameForEmpty(userName);
-        ShoppingCart cart = getActiveCart(userName);
+    public ShoppingCartDto deactivationShoppingCart(String username) {
+        checkUsernameForEmpty(username);
+        ShoppingCart cart = getActiveCart(username);
         cart.setStatus(ShoppingCartStatus.DEACTIVATE);
         return mapper.mapToCartDto(cart);
     }
 
     @Override
     @Transactional
-    public ShoppingCartDto removeProductFromCart(String userName, List<UUID> productsIds) {
-        checkUsernameForEmpty(userName);
-        ShoppingCart cart = getActiveCart(userName);
+    public ShoppingCartDto removeProductFromCart(String username, List<UUID> productsIds) {
+        checkUsernameForEmpty(username);
+        ShoppingCart cart = getActiveCart(username);
         Map<UUID, Integer> oldProducts = cart.getCartProducts();
 
         if (!productsIds.stream().allMatch(oldProducts::containsKey)) {
@@ -110,9 +110,9 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto changeQuantityInCart(String userName, ChangeProductQuantityRequest quantityRequest) {
-        checkUsernameForEmpty(userName);
-        ShoppingCart cart = getActiveCart(userName);
+    public ShoppingCartDto changeQuantityInCart(String username, ChangeProductQuantityRequest quantityRequest) {
+        checkUsernameForEmpty(username);
+        ShoppingCart cart = getActiveCart(username);
         checkAvailableProductsInWarehouse(cart.getCartId(),
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 
