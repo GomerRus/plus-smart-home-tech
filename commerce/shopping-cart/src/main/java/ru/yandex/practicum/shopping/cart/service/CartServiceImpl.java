@@ -5,16 +5,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.interaction.api.dto.cart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.interaction.api.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.interaction.api.exception.cart.CartNotFoundException;
 import ru.yandex.practicum.interaction.api.exception.cart.NoProductsInShoppingCartException;
 import ru.yandex.practicum.interaction.api.exception.cart.NotAuthorizedUserException;
+import ru.yandex.practicum.interaction.api.exception.cart.ShoppingCartDeactivateException;
 import ru.yandex.practicum.interaction.api.feign.client.warehouse.WarehouseFeignClient;
 import ru.yandex.practicum.shopping.cart.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.shopping.cart.model.ShoppingCart;
 import ru.yandex.practicum.shopping.cart.model.enums.ShoppingCartStatus;
 import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,18 +33,17 @@ public class CartServiceImpl implements CartService {
         }
     }
 
-    private ShoppingCart getActiveCart(String username) {
-        return shoppingCartRepository.findByUsernameAndStatus(username, ShoppingCartStatus.ACTIVE)
-                .orElseThrow(() -> new CartNotFoundException
-                        (String.format("У пользователя %s нет активной корзины.", username)));
-    }
+    private ShoppingCart getOrCreateCart(String username) {
+        return shoppingCartRepository.findByUsername(username)
+                .orElseGet(() -> {
 
-    private ShoppingCart createNewCart(String username) {
-        ShoppingCart newCart = new ShoppingCart();
-        newCart.setUsername(username);
-        newCart.setStatus(ShoppingCartStatus.ACTIVE);
-        newCart.setCartProducts(new HashMap<>());
-        return shoppingCartRepository.save(newCart);
+                    ShoppingCart cart = ShoppingCart.builder()
+                            .username(username)
+                            .build();
+                    shoppingCartRepository.save(cart);
+
+                    return cart;
+                });
     }
 
     private void checkAvailableProductsInWarehouse(UUID shoppingCartId, Map<UUID, Integer> products) {
@@ -62,9 +60,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public ShoppingCartDto getShoppingCart(String username) {
         checkUsernameForEmpty(username);
-        ShoppingCart cart = shoppingCartRepository.findByUsernameAndStatus(username, ShoppingCartStatus.ACTIVE)
-                .orElseGet(() -> createNewCart(username));
-
+        ShoppingCart cart = getOrCreateCart(username);
         return mapper.mapToCartDto(cart);
     }
 
@@ -72,7 +68,11 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public ShoppingCartDto addProductInCart(String username, Map<UUID, Integer> products) {
         checkUsernameForEmpty(username);
-        ShoppingCart cart = getActiveCart(username);
+        ShoppingCart cart = getOrCreateCart(username);
+        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
+            throw new ShoppingCartDeactivateException
+                    (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
+        }
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
         products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId, quantity, Integer::sum));
@@ -84,7 +84,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void deactivationShoppingCart(String username) {
         checkUsernameForEmpty(username);
-        ShoppingCart cart = getActiveCart(username);
+        ShoppingCart cart = getOrCreateCart(username);
         cart.setStatus(ShoppingCartStatus.DEACTIVATE);
     }
 
@@ -92,7 +92,11 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public ShoppingCartDto removeProductFromCart(String username, List<UUID> productsIds) {
         checkUsernameForEmpty(username);
-        ShoppingCart cart = getActiveCart(username);
+        ShoppingCart cart = getOrCreateCart(username);
+        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
+            throw new ShoppingCartDeactivateException
+                    (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
+        }
         Map<UUID, Integer> oldProducts = cart.getCartProducts();
 
         if (!productsIds.stream().allMatch(oldProducts::containsKey)) {
@@ -111,7 +115,11 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public ShoppingCartDto changeQuantityInCart(String username, ChangeProductQuantityRequest quantityRequest) {
         checkUsernameForEmpty(username);
-        ShoppingCart cart = getActiveCart(username);
+        ShoppingCart cart = getOrCreateCart(username);
+        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
+            throw new ShoppingCartDeactivateException
+                    (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
+        }
         checkAvailableProductsInWarehouse(cart.getCartId(),
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 

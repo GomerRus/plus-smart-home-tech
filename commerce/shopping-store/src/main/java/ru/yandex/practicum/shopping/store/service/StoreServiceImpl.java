@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.interaction.api.dto.store.ProductDto;
+import ru.yandex.practicum.interaction.api.dto.store.ProductPageDto;
 import ru.yandex.practicum.interaction.api.dto.store.SetProductQuantityStateRequest;
 import ru.yandex.practicum.interaction.api.enums.ProductCategory;
 import ru.yandex.practicum.interaction.api.enums.ProductState;
@@ -31,10 +32,14 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public List<ProductDto> getAllProducts(ProductCategory category, Pageable pageable) {
-        return productRepository.findByProductCategory(category, pageable).stream()
+    public ProductPageDto getAllProducts(ProductCategory category, Pageable pageable) {
+        List<Product> products = productRepository.findByProductCategory(category, pageable);
+
+        List<ProductDto> productsDto = products.stream()
                 .map(mapper::mapToProductDto)
                 .toList();
+
+        return new ProductPageDto(productsDto, pageable.getSort());
     }
 
     @Override

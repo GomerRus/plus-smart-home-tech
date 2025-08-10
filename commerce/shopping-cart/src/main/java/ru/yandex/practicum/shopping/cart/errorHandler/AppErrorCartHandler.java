@@ -11,6 +11,7 @@ import ru.yandex.practicum.interaction.api.exception.AppError;
 import ru.yandex.practicum.interaction.api.exception.cart.CartNotFoundException;
 import ru.yandex.practicum.interaction.api.exception.cart.NoProductsInShoppingCartException;
 import ru.yandex.practicum.interaction.api.exception.cart.NotAuthorizedUserException;
+import ru.yandex.practicum.interaction.api.exception.cart.ShoppingCartDeactivateException;
 
 @Slf4j
 @RestControllerAdvice
@@ -35,6 +36,13 @@ public class AppErrorCartHandler {
     public AppError handleCartNotFound(CartNotFoundException exp) {
         log.warn(exp.getMessage(), exp);
         return new AppError("ОШИБКА: КОРЗИНА НЕ НАЙДЕНА " + exp.getMessage());
+    }
+
+    @ExceptionHandler(ShoppingCartDeactivateException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public AppError handleShoppingCartDeactivate(ShoppingCartDeactivateException exp) {
+        log.warn(exp.getMessage(), exp);
+        return new AppError("ОШИБКА: КОРЗИНА ДЕАКТИВИРОВАННА " + exp.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

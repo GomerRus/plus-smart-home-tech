@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.interaction.api.dto.store.ProductDto;
+import ru.yandex.practicum.interaction.api.dto.store.ProductPageDto;
 import ru.yandex.practicum.interaction.api.dto.store.SetProductQuantityStateRequest;
 import ru.yandex.practicum.interaction.api.enums.ProductCategory;
 import ru.yandex.practicum.interaction.api.enums.QuantityState;
@@ -29,7 +30,7 @@ public class ShoppingStoreController {
     private final StoreService storeService;
 
     @GetMapping
-    public List<ProductDto> getAllProducts(@RequestParam ProductCategory category, Pageable pageable) {
+    public ProductPageDto getAllProducts(@RequestParam ProductCategory category, Pageable pageable) {
         log.info("Получен GET /api/v1/shopping-store запрос c категорией = {} и pageable = {}", category, pageable);
         return storeService.getAllProducts(category, pageable);
     }
