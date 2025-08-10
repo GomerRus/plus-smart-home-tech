@@ -5,40 +5,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.interaction.api.dto.cart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.interaction.api.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.interaction.api.dto.store.ProductDto;
 import ru.yandex.practicum.interaction.api.exception.cart.CartNotFoundException;
 import ru.yandex.practicum.interaction.api.exception.cart.NoProductsInShoppingCartException;
 import ru.yandex.practicum.interaction.api.exception.cart.NotAuthorizedUserException;
-import ru.yandex.practicum.interaction.api.feign.client.store.StoreFeignClient;
 import ru.yandex.practicum.interaction.api.feign.client.warehouse.WarehouseFeignClient;
 import ru.yandex.practicum.shopping.cart.mapper.ShoppingCartMapper;
-import ru.yandex.practicum.shopping.cart.model.CartProduct;
-import ru.yandex.practicum.shopping.cart.model.CartProductId;
 import ru.yandex.practicum.shopping.cart.model.ShoppingCart;
-import ru.yandex.practicum.shopping.cart.model.User;
-import ru.yandex.practicum.shopping.cart.repository.CartProductRepository;
+import ru.yandex.practicum.shopping.cart.model.enums.ShoppingCartStatus;
 import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
-import ru.yandex.practicum.shopping.cart.repository.UserRepository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CartServiceImpl implements CartService {
     private final ShoppingCartRepository shoppingCartRepository;
-    private final UserRepository userRepository;
-    private final CartProductRepository cartProductRepository;
     private final ShoppingCartMapper mapper;
-    private final StoreFeignClient storeFeignClient;
     private final WarehouseFeignClient warehouseFeignClient;
-
-    private User getUserByUserName(String userName) {
-        return userRepository.findByUserName(userName)
-                .orElseThrow(() -> new NotAuthorizedUserException(userName));
-    }
 
     private void checkUsernameForEmpty(String userName) {
         if (userName == null || userName.isBlank()) {
@@ -47,14 +35,16 @@ public class CartServiceImpl implements CartService {
     }
 
     private ShoppingCart getActiveCart(String userName) {
-        return shoppingCartRepository.findByUserUserNameAndIsActiveTrue(userName)
-                .orElseThrow(() -> new CartNotFoundException(userName));
+        return shoppingCartRepository.findByUserNameAndStatus(userName, ShoppingCartStatus.ACTIVE)
+                .orElseThrow(() -> new CartNotFoundException
+                        (String.format("У пользователя %s нет активной корзины.", userName)));
     }
 
-    private ShoppingCart createNewCart(User user) {
+    private ShoppingCart createNewCart(String userName) {
         ShoppingCart newCart = new ShoppingCart();
-        newCart.setUser(user);
-        newCart.setIsActive(true);
+        newCart.setUserName(userName);
+        newCart.setStatus(ShoppingCartStatus.ACTIVE);
+        newCart.setCartProducts(new HashMap<>());
         return shoppingCartRepository.save(newCart);
     }
 
@@ -71,9 +61,9 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public ShoppingCartDto getShoppingCart(String userName) {
-        User user = getUserByUserName(userName);
-        ShoppingCart cart = shoppingCartRepository.findByUserUserNameAndIsActiveTrue(userName)
-                .orElseGet(() -> createNewCart(user));
+        checkUsernameForEmpty(userName);
+        ShoppingCart cart = shoppingCartRepository.findByUserNameAndStatus(userName, ShoppingCartStatus.ACTIVE)
+                .orElseGet(() -> createNewCart(userName));
 
         return mapper.mapToCartDto(cart);
     }
@@ -85,31 +75,7 @@ public class CartServiceImpl implements CartService {
         ShoppingCart cart = getActiveCart(userName);
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
-        products.forEach((productId, quantity) -> {
-            ProductDto productDto = storeFeignClient.getProductById(productId);
-            if (productDto == null) {
-                throw new NoProductsInShoppingCartException(productId);
-            }
-
-            cart.getCartProducts().stream()
-                    .filter(cp -> cp.getCartProductId().getProductId().equals(productId))
-                    .findFirst()
-                    .ifPresentOrElse(
-                            cp -> cp.setQuantity(cp.getQuantity() + quantity),
-                            () -> {
-                                CartProductId id = CartProductId.builder()
-                                        .cartId(cart.getCartId())
-                                        .productId(productId)
-                                        .build();
-
-                                CartProduct newCartProduct = CartProduct.builder()
-                                        .cartProductId(id)
-                                        .quantity(quantity)
-                                        .build();
-                                cart.getCartProducts().add(newCartProduct);
-                            }
-                    );
-        });
+        products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId, quantity, Integer::sum));
 
         return mapper.mapToCartDto(shoppingCartRepository.save(cart));
     }
@@ -119,7 +85,7 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto deactivationShoppingCart(String userName) {
         checkUsernameForEmpty(userName);
         ShoppingCart cart = getActiveCart(userName);
-        cart.setIsActive(false);
+        cart.setStatus(ShoppingCartStatus.DEACTIVATE);
         return mapper.mapToCartDto(shoppingCartRepository.save(cart));
     }
 
@@ -128,8 +94,17 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto removeProductFromCart(String userName, List<UUID> productsIds) {
         checkUsernameForEmpty(userName);
         ShoppingCart cart = getActiveCart(userName);
-        cartProductRepository.deleteAllByCartProductIdCartIdAndCartProductIdProductIdIn(cart.getCartId(), productsIds);
-        cart.getCartProducts().removeIf(cp -> productsIds.contains(cp.getCartProductId().getProductId()));
+        Map<UUID, Integer> oldProducts = cart.getCartProducts();
+
+        if (!productsIds.stream().allMatch(oldProducts::containsKey)) {
+            throw new NoProductsInShoppingCartException("Указанных продуктов нет в корзине");
+        }
+
+        Map<UUID, Integer> newProducts = oldProducts.entrySet().stream()
+                .filter(cp -> !productsIds.contains(cp.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        cart.setCartProducts(newProducts);
         return mapper.mapToCartDto(shoppingCartRepository.save(cart));
     }
 
@@ -141,15 +116,13 @@ public class CartServiceImpl implements CartService {
         checkAvailableProductsInWarehouse(cart.getCartId(),
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 
-        cart.getCartProducts().stream()
-                .filter(cp -> cp.getCartProductId().getProductId().equals(quantityRequest.getProductId()))
-                .findFirst()
-                .ifPresentOrElse(
-                        cp -> cp.setQuantity(quantityRequest.getNewQuantity()),
-                        () -> {
-                            throw new NoProductsInShoppingCartException(quantityRequest.getProductId());
-                        }
-                );
+        Map<UUID, Integer> products = cart.getCartProducts();
+
+        if (!products.containsKey(quantityRequest.getProductId())) {
+            throw new NoProductsInShoppingCartException("Указанного продукта нет в корзине");
+        }
+
+        products.put(quantityRequest.getProductId(), quantityRequest.getNewQuantity());
 
         return mapper.mapToCartDto(shoppingCartRepository.save(cart));
 

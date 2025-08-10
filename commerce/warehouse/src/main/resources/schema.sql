@@ -1,12 +1,14 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS dimension (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     width DOUBLE PRECISION NOT NULL CHECK (width >= 1),
     height DOUBLE PRECISION NOT NULL CHECK (height >= 1),
     depth DOUBLE PRECISION NOT NULL CHECK (depth >= 1)
 );
 
 CREATE TABLE IF NOT EXISTS address (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
     country VARCHAR(255) NOT NULL,
     city VARCHAR(255) NOT NULL,
     street VARCHAR(255) NOT NULL,
@@ -15,7 +17,7 @@ CREATE TABLE IF NOT EXISTS address (
 );
 
 CREATE TABLE IF NOT EXISTS warehouse_product (
-   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+   id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
    product_id UUID NOT NULL UNIQUE,
    quantity BIGINT NOT NULL CHECK (quantity >= 0),
    weight DOUBLE PRECISION NOT NULL CHECK (weight >= 1),

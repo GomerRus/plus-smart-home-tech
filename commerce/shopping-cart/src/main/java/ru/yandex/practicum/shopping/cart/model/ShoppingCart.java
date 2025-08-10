@@ -1,12 +1,17 @@
 package ru.yandex.practicum.shopping.cart.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,9 +20,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.UuidGenerator;
+import ru.yandex.practicum.shopping.cart.model.enums.ShoppingCartStatus;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -30,19 +35,20 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingCart {
     @Id
-    @UuidGenerator
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "cart_id")
     UUID cartId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user;
+    String userName;
 
-    @Column(name = "is_active")
-    Boolean isActive;
+    @Enumerated(value = EnumType.STRING)
+    ShoppingCartStatus status;
 
-    @OneToMany(mappedBy = "cartProductId.cartId", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<CartProduct> cartProducts;
+    @ElementCollection
+    @CollectionTable(name = "cart_products", joinColumns = @JoinColumn(name = "cart_id"))
+    @MapKeyColumn(name = "product_id")
+    @Column(name = "quantity")
+    Map<UUID, Integer> cartProducts;
 }
 
 
