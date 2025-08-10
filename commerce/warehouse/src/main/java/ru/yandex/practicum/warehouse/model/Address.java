@@ -33,22 +33,20 @@ public class Address {
     @Column(name = "id")
     UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "country")
     String country;
 
-    @Column(nullable = false)
+    @Column(name = "city")
     String city;
 
-    @Column(nullable = false)
+    @Column(name = "street")
     String street;
 
-    @Column(nullable = false)
+    @Column(name = "house")
     String house;
 
+    @Column(name = "flat")
     String flat;
-
-    @OneToMany(mappedBy = "address", cascade = CascadeType.ALL)
-    List<WarehouseProduct> warehouseProducts;
 
     public static Address createAddress(String value) {
         return Address.builder()

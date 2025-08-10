@@ -33,32 +33,32 @@ import java.util.UUID;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "product_id", nullable = false)
+    @Column(name = "product_id")
     UUID productId;
 
-    @Column(name = "product_name", nullable = false)
+    @Column(name = "product_name")
     String productName;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description")
     String description;
 
-    @Column(name = "image_src", nullable = false)
+    @Column(name = "image_src")
     String imageSrc;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "quantity_state", nullable = false)
+    @Column(name = "quantity_state")
     QuantityState quantityState;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "product_state", nullable = false)
+    @Column(name = "product_state")
     ProductState productState;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "product_category", nullable = false)
+    @Column(name = "product_category")
     ProductCategory productCategory;
 
     @Min(1)
-    @Column(name = "price", nullable = false)
+    @Column(name = "price")
     Float price;
 }
 

@@ -31,17 +31,14 @@ public class Dimension {
     @Column(name = "id")
     UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "width")
     Double width;
 
-    @Column(nullable = false)
+    @Column(name = "height")
     Double height;
 
-    @Column(nullable = false)
+    @Column(name = "depth")
     Double depth;
-
-    @OneToOne(mappedBy = "dimension")
-    WarehouseProduct warehouseProduct;
 }
 
 

@@ -31,9 +31,12 @@ public class ProductDto {
     @NotNull
     ProductState productState;
 
-    @NotNull
     ProductCategory productCategory;
 
     @Min(1)
-    Double price;
+    @NotNull
+    Float price;
+
+    @NotBlank
+    String description;
 }

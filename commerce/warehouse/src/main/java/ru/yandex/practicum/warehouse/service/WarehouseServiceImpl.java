@@ -66,7 +66,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public BookedProductsDto checkQuantityProducts(ShoppingCartDto shoppingCartDto) {
-        Map<UUID, Integer> cartProducts = shoppingCartDto.getProducts();
+        Map<UUID, Integer> cartProducts = shoppingCartDto.getCartProducts();
         Set<UUID> cartProductIds = cartProducts.keySet();
 
         Map<UUID, WarehouseProduct> warehouseProducts = warehouseRepository.findAllById(cartProductIds).stream()

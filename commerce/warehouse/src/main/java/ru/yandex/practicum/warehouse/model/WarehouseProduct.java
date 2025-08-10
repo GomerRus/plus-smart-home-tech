@@ -31,28 +31,20 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class WarehouseProduct {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
-    UUID id;
-
-    @Column(name = "product_id", unique = true, nullable = false)
+    @Column(name = "product_id")
     UUID productId;
 
     @Column(name = "quantity")
     @Builder.Default
     Integer quantity = 0;
 
-    @Column(nullable = false)
+    @Column(name = "weight")
     Double weight;
 
-    @Column(nullable = false)
+    @Column(name = "fragile")
     Boolean fragile;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "dimension_id", referencedColumnName = "id", unique = true)
     Dimension dimension;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", nullable = false)
-    Address address;
 }

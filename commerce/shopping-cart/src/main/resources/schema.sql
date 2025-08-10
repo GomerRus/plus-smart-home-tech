@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS shopping_carts (
     cart_id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
-    username VARCHAR(255) NOT NULL,
+    user_name VARCHAR(255) NOT NULL,
     status VARCHAR(50) NOT NULL
 );
 
