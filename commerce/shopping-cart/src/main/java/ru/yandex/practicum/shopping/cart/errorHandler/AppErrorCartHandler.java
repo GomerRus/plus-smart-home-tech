@@ -31,7 +31,7 @@ public class AppErrorCartHandler {
     }
 
     @ExceptionHandler(CartNotFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public AppError handleCartNotFound(CartNotFoundException exp) {
         log.warn(exp.getMessage(), exp);
         return new AppError("ОШИБКА: КОРЗИНА НЕ НАЙДЕНА " + exp.getMessage());

@@ -29,7 +29,7 @@ public interface CartFeignClient {
                                      @RequestBody @NotEmpty Map<UUID, @NotNull @Positive Integer> products) throws FeignException;
 
     @DeleteMapping
-    ShoppingCartDto deactivationShoppingCart(@RequestParam String userName) throws FeignException;
+    void deactivationShoppingCart(@RequestParam String userName) throws FeignException;
 
     @PostMapping("/remove")
     ShoppingCartDto removeProductFromCart(@RequestParam String userName,

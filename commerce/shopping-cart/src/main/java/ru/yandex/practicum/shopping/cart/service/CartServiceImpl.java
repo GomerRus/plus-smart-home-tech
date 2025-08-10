@@ -82,11 +82,10 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto deactivationShoppingCart(String username) {
+    public void deactivationShoppingCart(String username) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getActiveCart(username);
         cart.setStatus(ShoppingCartStatus.DEACTIVATE);
-        return mapper.mapToCartDto(cart);
     }
 
     @Override

@@ -46,9 +46,9 @@ public class ShoppingCartController {
     }
 
     @DeleteMapping
-    public ShoppingCartDto deactivationShoppingCart(@RequestParam String username) {
+    public void deactivationShoppingCart(@RequestParam String username) {
         log.info("Получен DELETE /api/v1/shopping-cart запрос на деактивацию корзины товаров пользователя {}", username);
-        return cartService.deactivationShoppingCart(username);
+        cartService.deactivationShoppingCart(username);
     }
 
 
