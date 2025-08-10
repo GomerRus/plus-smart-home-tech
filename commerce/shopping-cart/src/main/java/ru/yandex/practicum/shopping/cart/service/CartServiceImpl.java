@@ -50,8 +50,8 @@ public class CartServiceImpl implements CartService {
 
     private void checkAvailableProductsInWarehouse(UUID shoppingCartId, Map<UUID, Integer> products) {
         ShoppingCartDto shoppingCartDto = ShoppingCartDto.builder()
-                .shoppingCartId(shoppingCartId)
-                .products(products)
+                .cartId(shoppingCartId)
+                .cartProducts(products)
                 .build();
 
         warehouseFeignClient.checkQuantityProducts(shoppingCartDto);
