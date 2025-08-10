@@ -50,7 +50,7 @@ public class StoreServiceImpl implements StoreService {
         Product product = getProduct(productDto.getProductId());
         mapper.updateProductFromDto(product, productDto);
 
-        return mapper.mapToProductDto(productRepository.save(product));
+        return mapper.mapToProductDto(product);
     }
 
     @Override

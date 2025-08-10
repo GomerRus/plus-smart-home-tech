@@ -41,7 +41,7 @@ public class ShoppingStoreController {
     }
 
     @PostMapping
-    public ProductDto updateProduct(@RequestBody ProductDto productDto) {
+    public ProductDto updateProduct(@Valid @RequestBody ProductDto productDto) {
         log.info("Получен PUT /api/v1/shopping-store запрос на обновление товара c productName = {}",
                 productDto.getProductName());
         return storeService.updateProduct(productDto);

@@ -18,7 +18,7 @@ public class AppErrorStoreHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public AppError handleProductNotFoundException(ProductNotFoundException exp) {
         log.warn(exp.getMessage(), exp);
-        return new AppError("ОШИБКА: ПРОДУКТОВ НЕ НАЙДЕН " + exp.getMessage());
+        return new AppError("ОШИБКА: ПРОДУКТ НЕ НАЙДЕН " + exp.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

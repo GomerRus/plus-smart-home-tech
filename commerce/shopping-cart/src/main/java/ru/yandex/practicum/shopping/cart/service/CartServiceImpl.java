@@ -77,7 +77,7 @@ public class CartServiceImpl implements CartService {
 
         products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId, quantity, Integer::sum));
 
-        return mapper.mapToCartDto(shoppingCartRepository.save(cart));
+        return mapper.mapToCartDto(cart);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class CartServiceImpl implements CartService {
         checkUsernameForEmpty(userName);
         ShoppingCart cart = getActiveCart(userName);
         cart.setStatus(ShoppingCartStatus.DEACTIVATE);
-        return mapper.mapToCartDto(shoppingCartRepository.save(cart));
+        return mapper.mapToCartDto(cart);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class CartServiceImpl implements CartService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         cart.setCartProducts(newProducts);
-        return mapper.mapToCartDto(shoppingCartRepository.save(cart));
+        return mapper.mapToCartDto(cart);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class CartServiceImpl implements CartService {
 
         products.put(quantityRequest.getProductId(), quantityRequest.getNewQuantity());
 
-        return mapper.mapToCartDto(shoppingCartRepository.save(cart));
+        return mapper.mapToCartDto(cart);
 
     }
 }
