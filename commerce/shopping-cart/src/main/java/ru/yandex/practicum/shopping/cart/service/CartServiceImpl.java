@@ -17,6 +17,7 @@ import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -107,7 +108,23 @@ public class CartServiceImpl implements CartService {
         }
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
-        products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId, quantity, Integer::sum));
+        Map<UUID, Integer> cartProducts = cart.getCartProducts();
+
+        if (cartProducts == null) {
+            cartProducts = new HashMap<>();
+            cart.setCartProducts(cartProducts);
+        }
+
+        for (Map.Entry<UUID, Integer> entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Integer quantity = entry.getValue();
+
+            if (quantity <= 0) {
+                throw new IllegalArgumentException("Количество товара должно быть положительным");
+            }
+
+            cartProducts.merge(productId, quantity, Integer::sum);
+        }
 
         return mapper.mapToCartDto(cart);
     }
