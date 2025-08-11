@@ -51,6 +51,7 @@ public class ShoppingCart {
     @CollectionTable(name = "cart_products", joinColumns = @JoinColumn(name = "cart_id"))
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
+    @Builder.Default
     Map<UUID, Integer> cartProducts = new HashMap<>();;
 }
 

@@ -18,7 +18,6 @@ import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -103,14 +102,7 @@ public class CartServiceImpl implements CartService {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
         validateCartStatus(cart);
-
-        Map<UUID, Integer> cartProducts = cart.getCartProducts();
-        if (cartProducts == null) {
-            cartProducts = new HashMap<>();
-            cart.setCartProducts(cartProducts);
-        }
-
-        validateCartProducts(cartProducts);
+        validateCartProducts(cart.getCartProducts());
 
         return mapper.mapToCartDto(cart);
     }
@@ -151,11 +143,6 @@ public class CartServiceImpl implements CartService {
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
         Map<UUID, Integer> cartProducts = cart.getCartProducts();
-
-        if (cartProducts == null) {
-            cartProducts = new HashMap<>();
-            cart.setCartProducts(cartProducts);
-        }
 
         for (Map.Entry<UUID, Integer> entry : products.entrySet()) {
             UUID productId = entry.getKey();
@@ -220,10 +207,6 @@ public class CartServiceImpl implements CartService {
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 
         Map<UUID, Integer> cartProducts = cart.getCartProducts();
-        if (cartProducts == null) {
-            cartProducts = new HashMap<>();
-            cart.setCartProducts(cartProducts);
-        }
 
         UUID productId = quantityRequest.getProductId();
         int newQuantity = quantityRequest.getNewQuantity();

@@ -105,7 +105,7 @@ public class WarehouseServiceImpl implements WarehouseService {
             result.setDeliveryWeight(newWeight);
 
             if (product.getFragile() != null) {
-                boolean fragile = result.getFragile() || product.getFragile(); // true true -> t, tf->t,  ff->f
+                boolean fragile = result.getFragile() || product.getFragile();
                 result.setFragile(fragile);
             }
         }
