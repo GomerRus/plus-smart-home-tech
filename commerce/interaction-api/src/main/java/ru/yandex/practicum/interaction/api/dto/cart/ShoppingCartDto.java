@@ -18,7 +18,7 @@ public class ShoppingCartDto {
     @NotNull
     UUID cartId;
 
-    @Builder.Default
+   // @Builder.Default
     @NotNull
-    Map<UUID, @NotNull @Positive Integer> cartProducts = new HashMap<>();
+    Map<UUID, @NotNull @Positive Integer> cartProducts; //= new HashMap<>();
 }

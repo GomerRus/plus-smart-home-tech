@@ -41,12 +41,12 @@ public class CartServiceImpl implements CartService {
         return shoppingCartRepository.findByUsername(username)
                 .orElseGet(() -> {
 
-                    Map<UUID, Integer> initialProducts = new HashMap<>();
+                  //  Map<UUID, Integer> initialProducts = new HashMap<>();
 
                     ShoppingCart cart = ShoppingCart.builder()
                             .username(username)
-                            .status(ShoppingCartStatus.ACTIVE)
-                            .cartProducts(initialProducts)
+                         //   .status(ShoppingCartStatus.ACTIVE)
+                      //      .cartProducts(initialProducts)
                             .build();
                     shoppingCartRepository.save(cart);
 
@@ -105,13 +105,13 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto getShoppingCart(String username) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
-        validateCartStatus(cart);
+        /* validateCartStatus(cart);
 
         if (cart.getCartProducts() == null) {
             cart.setCartProducts(new HashMap<>());
         }
 
-        validateCartProducts(cart.getCartProducts());
+        validateCartProducts(cart.getCartProducts());*/
 
         return mapper.mapToCartDto(cart);
     }
@@ -151,7 +151,7 @@ public class CartServiceImpl implements CartService {
 
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
-        Map<UUID, Integer> cartProducts = cart.getCartProducts();
+       /* Map<UUID, Integer> cartProducts = cart.getCartProducts();
 
         products.forEach((productId, quantity) -> {
             if (productId == null) {
@@ -169,7 +169,10 @@ public class CartServiceImpl implements CartService {
         if (dto.getCartProducts() == null) {
             dto.setCartProducts(new HashMap<>());
         }
-        return dto;
+        return dto;*/
+        products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId,
+                quantity, Integer::sum));
+        return mapper.mapToCartDto(cart);
     }
 
     @Override
@@ -206,16 +209,16 @@ public class CartServiceImpl implements CartService {
         }
 
         ShoppingCart cart = getOrCreateCart(username);
-        if (cart.getCartProducts() == null) {
+       /* if (cart.getCartProducts() == null) {
             cart.setCartProducts(new HashMap<>());
-        }
+        }*/
 
         validateCartStatus(cart);
         validateCartHaveAllProduct(cart, List.of(quantityRequest.getProductId()));
         checkAvailableProductsInWarehouse(cart.getCartId(),
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 
-        Map<UUID, Integer> cartProducts = cart.getCartProducts();
+       /* Map<UUID, Integer> cartProducts = cart.getCartProducts();
 
         UUID productId = quantityRequest.getProductId();
         int newQuantity = quantityRequest.getNewQuantity();
@@ -230,6 +233,9 @@ public class CartServiceImpl implements CartService {
             dto.setCartProducts(new HashMap<>());
         }
 
-        return dto;
+        return dto;*/
+        cart.getCartProducts().forEach((id, count) -> cart.getCartProducts().put(id, count));
+
+        return mapper.mapToCartDto(cart);
     }
 }

@@ -45,7 +45,8 @@ public class ShoppingCart {
 
     @Column(name = "status")
     @Enumerated(value = EnumType.STRING)
-    ShoppingCartStatus status;
+    @Builder.Default
+    ShoppingCartStatus status = ShoppingCartStatus.ACTIVE;
 
     @ElementCollection
     @CollectionTable(name = "cart_products", joinColumns = @JoinColumn(name = "cart_id"))
