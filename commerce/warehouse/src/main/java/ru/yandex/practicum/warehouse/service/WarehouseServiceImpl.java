@@ -36,13 +36,15 @@ public class WarehouseServiceImpl implements WarehouseService {
     private final AddressMapper addressMapper;
     private final WarehouseProductMapper warehouseProductMapper;
     private final UUID idAddress;
+    private final StoreFeignClient storeFeignClient;
 
     public WarehouseServiceImpl(AddressRepository addressRepository, WarehouseRepository warehouseRepository,
-                                AddressMapper addressMapper, WarehouseProductMapper warehouseProductMapper) {
+                                AddressMapper addressMapper, WarehouseProductMapper warehouseProductMapper, StoreFeignClient storeFeignClient) {
         this.addressRepository = addressRepository;
         this.warehouseRepository = warehouseRepository;
         this.addressMapper = addressMapper;
         this.warehouseProductMapper = warehouseProductMapper;
+        this.storeFeignClient = storeFeignClient;
         String[] address = {"ADDRESS_1", "ADDRESS_2"};
         int randomIdx = Random.from(new SecureRandom()).nextInt(0, address.length);
         this.idAddress = addressRepository.save(Address.createAddress(address[randomIdx])).getId();
@@ -93,6 +95,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .orElseThrow(() -> new NoSpecifiedProductInWarehouseException
                         (String.format("Товара с ID = %s нeт на складе", addRequest.getProductId())));
         product.setQuantity(product.getQuantity() + addRequest.getQuantity());
+        updateProductQuantityInShoppingStore(product);
     }
 
     @Override
@@ -118,4 +121,21 @@ public class WarehouseServiceImpl implements WarehouseService {
                         .sum())
                 .build();
     }
+
+    private void updateProductQuantityInShoppingStore(WarehouseProduct product) {
+        UUID productId = product.getProductId();
+        QuantityState quantityState;
+        Integer quantity = product.getQuantity();
+        if (quantity == 0) {
+            quantityState = QuantityState.ENDED;
+        } else if (quantity < 10) {
+            quantityState = QuantityState.ENOUGH;
+        } else if (quantity < 100) {
+            quantityState = QuantityState.FEW;
+        } else {
+            quantityState = QuantityState.MANY;
+        }
+        storeFeignClient.setProductQuantityState(productId, quantityState);
+    }
+
 }
