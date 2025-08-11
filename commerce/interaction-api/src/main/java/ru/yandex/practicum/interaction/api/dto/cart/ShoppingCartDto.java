@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,7 +17,6 @@ public class ShoppingCartDto {
     @NotNull
     UUID cartId;
 
-   // @Builder.Default
     @NotNull
-    Map<UUID, @NotNull @Positive Integer> cartProducts; //= new HashMap<>();
+    Map<UUID, @NotNull @Positive Integer> products;
 }

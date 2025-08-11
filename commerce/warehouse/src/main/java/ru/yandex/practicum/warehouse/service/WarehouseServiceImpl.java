@@ -62,7 +62,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public BookedProductsDto checkQuantityProducts(ShoppingCartDto shoppingCartDto) {
-        Set<UUID> ids = shoppingCartDto.getCartProducts().keySet();
+        Set<UUID> ids = shoppingCartDto.getProducts().keySet();
         Map<UUID, WarehouseProduct> productById = warehouseRepository.findAllAsMapByIds(ids);
 
         BookedProductsDto result = BookedProductsDto.builder()
@@ -74,7 +74,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         List<ProductNotEnough> productsNotEnough = new ArrayList<>();
         List<UUID> productsNotFound = new ArrayList<>();
 
-        for (Map.Entry<UUID, Integer> entry : shoppingCartDto.getCartProducts().entrySet()) {
+        for (Map.Entry<UUID, Integer> entry : shoppingCartDto.getProducts().entrySet()) {
             UUID id = entry.getKey();
             Integer wantedCount = entry.getValue();
 

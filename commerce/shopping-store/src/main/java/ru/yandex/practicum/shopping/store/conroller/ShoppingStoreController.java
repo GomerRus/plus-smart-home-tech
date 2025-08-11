@@ -19,7 +19,6 @@ import ru.yandex.practicum.interaction.api.enums.ProductCategory;
 import ru.yandex.practicum.interaction.api.enums.QuantityState;
 import ru.yandex.practicum.shopping.store.service.StoreService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j

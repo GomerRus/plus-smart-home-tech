@@ -61,24 +61,3 @@ public class Product {
     @Column(name = "price")
     Float price;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

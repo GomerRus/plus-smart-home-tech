@@ -18,7 +18,6 @@ import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,12 +40,8 @@ public class CartServiceImpl implements CartService {
         return shoppingCartRepository.findByUsername(username)
                 .orElseGet(() -> {
 
-                  //  Map<UUID, Integer> initialProducts = new HashMap<>();
-
                     ShoppingCart cart = ShoppingCart.builder()
                             .username(username)
-                         //   .status(ShoppingCartStatus.ACTIVE)
-                      //      .cartProducts(initialProducts)
                             .build();
                     shoppingCartRepository.save(cart);
 
@@ -72,7 +67,7 @@ public class CartServiceImpl implements CartService {
     private void checkAvailableProductsInWarehouse(UUID shoppingCartId, Map<UUID, Integer> products) {
         ShoppingCartDto shoppingCartDto = ShoppingCartDto.builder()
                 .cartId(shoppingCartId)
-                .cartProducts(products)
+                .products(products)
                 .build();
 
         warehouseFeignClient.checkQuantityProducts(shoppingCartDto);
@@ -80,7 +75,7 @@ public class CartServiceImpl implements CartService {
     }
 
     private void validateCartHaveAllProduct(ShoppingCart shoppingCart, Collection<UUID> productsIds) {
-        int countProductInCart = shoppingCart.getCartProducts().size();
+        int countProductInCart = shoppingCart.getProducts().size();
         int countProductToCheck = productsIds.size();
 
         if (countProductToCheck > countProductInCart) {
@@ -90,7 +85,7 @@ public class CartServiceImpl implements CartService {
         List<UUID> notFoundIds = new ArrayList<>();
 
         productsIds.forEach(id -> {
-            if (!shoppingCart.getCartProducts().containsKey(id)) {
+            if (!shoppingCart.getProducts().containsKey(id)) {
                 notFoundIds.add(id);
             }
         });
@@ -105,36 +100,8 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto getShoppingCart(String username) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
-        /* validateCartStatus(cart);
-
-        if (cart.getCartProducts() == null) {
-            cart.setCartProducts(new HashMap<>());
-        }
-
-        validateCartProducts(cart.getCartProducts());*/
 
         return mapper.mapToCartDto(cart);
-    }
-
-    private void validateCartProducts(Map<UUID, Integer> cartProducts) {
-        if (cartProducts == null) {
-            throw new IllegalStateException("Карта продуктов в корзине не может быть null");
-        }
-
-        for (Map.Entry<UUID, Integer> entry : cartProducts.entrySet()) {
-            UUID productId = entry.getKey();
-            Integer quantity = entry.getValue();
-
-            if (productId == null) {
-                throw new IllegalArgumentException("ID продукта не может быть null");
-            }
-
-            if (quantity == null || quantity <= 0) {
-                throw new IllegalArgumentException(
-                        String.format("Неверное количество товара для продукта %s", productId)
-                );
-            }
-        }
     }
 
     @Override
@@ -151,26 +118,7 @@ public class CartServiceImpl implements CartService {
 
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
-       /* Map<UUID, Integer> cartProducts = cart.getCartProducts();
-
-        products.forEach((productId, quantity) -> {
-            if (productId == null) {
-                throw new IllegalArgumentException("ID продукта не может быть null");
-            }
-            if (quantity == null || quantity <= 0) {
-                throw new IllegalArgumentException(
-                        String.format("Неверное количество для продукта %s: %d", productId, quantity)
-                );
-            }
-            cartProducts.merge(productId, quantity, Integer::sum);
-        });
-
-        ShoppingCartDto dto = mapper.mapToCartDto(cart);
-        if (dto.getCartProducts() == null) {
-            dto.setCartProducts(new HashMap<>());
-        }
-        return dto;*/
-        products.forEach((productId, quantity) -> cart.getCartProducts().merge(productId,
+        products.forEach((productId, quantity) -> cart.getProducts().merge(productId,
                 quantity, Integer::sum));
         return mapper.mapToCartDto(cart);
     }
@@ -190,7 +138,7 @@ public class CartServiceImpl implements CartService {
         ShoppingCart cart = getOrCreateCart(username);
         validateCartStatus(cart);
         validateCartHaveAllProduct(cart, productsIds);
-        productsIds.forEach(id -> cart.getCartProducts().remove(id));
+        productsIds.forEach(id -> cart.getProducts().remove(id));
 
         return mapper.mapToCartDto(cart);
     }
@@ -209,32 +157,13 @@ public class CartServiceImpl implements CartService {
         }
 
         ShoppingCart cart = getOrCreateCart(username);
-       /* if (cart.getCartProducts() == null) {
-            cart.setCartProducts(new HashMap<>());
-        }*/
 
         validateCartStatus(cart);
         validateCartHaveAllProduct(cart, List.of(quantityRequest.getProductId()));
         checkAvailableProductsInWarehouse(cart.getCartId(),
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 
-       /* Map<UUID, Integer> cartProducts = cart.getCartProducts();
-
-        UUID productId = quantityRequest.getProductId();
-        int newQuantity = quantityRequest.getNewQuantity();
-
-        if (newQuantity <= 0) {
-            cartProducts.remove(productId);
-        } else {
-            cartProducts.put(productId, newQuantity);
-        }
-        ShoppingCartDto dto = mapper.mapToCartDto(cart);
-        if (dto.getCartProducts() == null) {
-            dto.setCartProducts(new HashMap<>());
-        }
-
-        return dto;*/
-        cart.getCartProducts().forEach((id, count) -> cart.getCartProducts().put(id, count));
+        cart.getProducts().forEach((id, count) -> cart.getProducts().put(id, count));
 
         return mapper.mapToCartDto(cart);
     }

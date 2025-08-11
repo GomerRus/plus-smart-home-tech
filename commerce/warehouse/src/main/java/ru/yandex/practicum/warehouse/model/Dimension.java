@@ -40,19 +40,3 @@ public class Dimension {
     @Column(name = "depth")
     Double depth;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

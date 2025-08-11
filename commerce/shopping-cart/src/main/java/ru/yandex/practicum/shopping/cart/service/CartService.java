@@ -18,4 +18,4 @@ public interface CartService {
 
     ShoppingCartDto changeQuantityInCart(String username, ChangeProductQuantityRequest quantityRequest);
 
-    }
+}
