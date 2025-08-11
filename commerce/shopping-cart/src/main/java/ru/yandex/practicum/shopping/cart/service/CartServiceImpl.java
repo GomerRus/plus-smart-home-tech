@@ -42,7 +42,7 @@ public class CartServiceImpl implements CartService {
 
                     ShoppingCart cart = ShoppingCart.builder()
                             .username(username)
-                            .status(ShoppingCartStatus.ACTIVE)
+                            // .status(ShoppingCartStatus.ACTIVE)
                             .build();
                     shoppingCartRepository.save(cart);
 

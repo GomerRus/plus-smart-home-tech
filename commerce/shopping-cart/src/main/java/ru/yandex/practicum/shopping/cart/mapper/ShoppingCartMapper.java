@@ -16,7 +16,7 @@ public interface ShoppingCartMapper {
 
     ShoppingCartDto mapToCartDto(ShoppingCart shoppingCart);
 
-    default Map<UUID, Integer> mapCartProducts(Map<UUID, Integer> products) {
-        return products != null ? new HashMap<>(products) : Collections.emptyMap();
-    }
+    // default Map<UUID, Integer> mapCartProducts(Map<UUID, Integer> products) {
+    //    return products != null ? new HashMap<>(products) : Collections.emptyMap();
+  //  }
 }
