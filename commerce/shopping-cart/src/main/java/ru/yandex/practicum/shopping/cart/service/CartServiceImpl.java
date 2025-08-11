@@ -1,6 +1,7 @@
 package ru.yandex.practicum.shopping.cart.service;
 
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,8 +52,17 @@ public class CartServiceImpl implements CartService {
     }
 
     private void validateCartStatus(ShoppingCart cart) {
+        if (cart == null) {
+            throw new NotFoundException("Корзина не найдена");
+        }
+
         if (cart.getStatus() == null) {
-            throw new IllegalStateException("Статус корзины не может быть null");
+            throw new IllegalStateException("Статус корзины не определен");
+        }
+
+        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
+            throw new ShoppingCartDeactivateException(("Корзина пользователя деактивирована")
+            );
         }
     }
 
@@ -92,20 +102,52 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto getShoppingCart(String username) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
+        validateCartStatus(cart);
+
+        Map<UUID, Integer> cartProducts = cart.getCartProducts();
+        if (cartProducts == null) {
+            cartProducts = new HashMap<>();
+            cart.setCartProducts(cartProducts);
+        }
+
+        validateCartProducts(cartProducts);
+
         return mapper.mapToCartDto(cart);
+    }
+
+    private void validateCartProducts(Map<UUID, Integer> cartProducts) {
+        if (cartProducts == null) {
+            throw new IllegalStateException("Карта продуктов в корзине не может быть null");
+        }
+
+        for (Map.Entry<UUID, Integer> entry : cartProducts.entrySet()) {
+            UUID productId = entry.getKey();
+            Integer quantity = entry.getValue();
+
+            if (productId == null) {
+                throw new IllegalArgumentException("ID продукта не может быть null");
+            }
+
+            if (quantity == null || quantity <= 0) {
+                throw new IllegalArgumentException(
+                        String.format("Неверное количество товара для продукта %s", productId)
+                );
+            }
+        }
     }
 
     @Override
     @Transactional
     public ShoppingCartDto addProductInCart(String username, Map<UUID, Integer> products) {
         checkUsernameForEmpty(username);
+
+        if (products == null || products.isEmpty()) {
+            throw new BadRequestException("Список продуктов не может быть пустым");
+        }
+
         ShoppingCart cart = getOrCreateCart(username);
         validateCartStatus(cart);
 
-        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
-            throw new ShoppingCartDeactivateException
-                    (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
-        }
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
         Map<UUID, Integer> cartProducts = cart.getCartProducts();
@@ -123,7 +165,15 @@ public class CartServiceImpl implements CartService {
                 throw new IllegalArgumentException("Количество товара должно быть положительным");
             }
 
-            cartProducts.merge(productId, quantity, Integer::sum);
+            if (!cartProducts.containsKey(productId)) {
+                cartProducts.put(productId, quantity);
+            } else {
+
+                int currentQuantity = cartProducts.get(productId);
+                int newQuantity = currentQuantity + quantity;
+
+                cartProducts.put(productId, newQuantity);
+            }
         }
 
         return mapper.mapToCartDto(cart);
@@ -142,12 +192,7 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto removeProductFromCart(String username, List<UUID> productsIds) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
-
-        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
-            throw new ShoppingCartDeactivateException
-                    (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
-        }
-
+        validateCartStatus(cart);
         validateCartHaveAllProduct(cart, productsIds);
         productsIds.forEach(id -> cart.getCartProducts().remove(id));
 
@@ -163,20 +208,23 @@ public class CartServiceImpl implements CartService {
             throw new BadRequestException("Запрос на изменение количества не может быть пустым");
         }
 
+        if (quantityRequest.getProductId() == null || quantityRequest.getNewQuantity() == null) {
+            throw new BadRequestException("productId и newQuantity должны быть заполнены");
+        }
+
         ShoppingCart cart = getOrCreateCart(username);
 
         validateCartStatus(cart);
-
-        if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
-            throw new ShoppingCartDeactivateException
-                    (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
-        }
-
         validateCartHaveAllProduct(cart, List.of(quantityRequest.getProductId()));
         checkAvailableProductsInWarehouse(cart.getCartId(),
                 Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
 
         Map<UUID, Integer> cartProducts = cart.getCartProducts();
+        if (cartProducts == null) {
+            cartProducts = new HashMap<>();
+            cart.setCartProducts(cartProducts);
+        }
+
         UUID productId = quantityRequest.getProductId();
         int newQuantity = quantityRequest.getNewQuantity();
 
