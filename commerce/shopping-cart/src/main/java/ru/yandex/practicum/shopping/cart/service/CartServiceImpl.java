@@ -1,5 +1,6 @@
 package ru.yandex.practicum.shopping.cart.service;
 
+import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,11 +41,18 @@ public class CartServiceImpl implements CartService {
 
                     ShoppingCart cart = ShoppingCart.builder()
                             .username(username)
+                            .status(ShoppingCartStatus.ACTIVE)
                             .build();
                     shoppingCartRepository.save(cart);
 
                     return cart;
                 });
+    }
+
+    private void validateCartStatus(ShoppingCart cart) {
+        if (cart.getStatus() == null) {
+            throw new IllegalStateException("Статус корзины не может быть null");
+        }
     }
 
     private void checkAvailableProductsInWarehouse(UUID shoppingCartId, Map<UUID, Integer> products) {
@@ -92,6 +99,8 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto addProductInCart(String username, Map<UUID, Integer> products) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
+        validateCartStatus(cart);
+
         if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
             throw new ShoppingCartDeactivateException
                     (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
@@ -116,7 +125,7 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto removeProductFromCart(String username, List<UUID> productsIds) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
-        
+
         if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
             throw new ShoppingCartDeactivateException
                     (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
@@ -132,7 +141,14 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public ShoppingCartDto changeQuantityInCart(String username, ChangeProductQuantityRequest quantityRequest) {
         checkUsernameForEmpty(username);
+
+        if (quantityRequest == null) {
+            throw new BadRequestException("Запрос на изменение количества не может быть пустым");
+        }
+
         ShoppingCart cart = getOrCreateCart(username);
+
+        validateCartStatus(cart);
 
         if (cart.getStatus().equals(ShoppingCartStatus.DEACTIVATE)) {
             throw new ShoppingCartDeactivateException
