@@ -22,6 +22,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.shopping.cart.model.enums.ShoppingCartStatus;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public class ShoppingCart {
     @CollectionTable(name = "cart_products", joinColumns = @JoinColumn(name = "cart_id"))
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    Map<UUID, Integer> cartProducts;
+    Map<UUID, Integer> cartProducts = new HashMap<>();;
 }
 
 

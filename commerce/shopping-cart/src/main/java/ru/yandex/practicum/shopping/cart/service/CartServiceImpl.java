@@ -17,11 +17,9 @@ import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -94,12 +92,7 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto getShoppingCart(String username) {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
-        ShoppingCartDto dto = mapper.mapToCartDto(cart);
-        if (dto.getCartProducts() == null) {
-            dto.setCartProducts(Collections.emptyMap());
-        }
-
-        return dto;
+        return mapper.mapToCartDto(cart);
     }
 
     @Override
@@ -115,19 +108,23 @@ public class CartServiceImpl implements CartService {
         }
         checkAvailableProductsInWarehouse(cart.getCartId(), products);
 
-        Map<UUID, Integer> cartProducts = Optional.ofNullable(cart.getCartProducts())
-                .orElseGet(() -> {
-                    Map<UUID, Integer> newMap = new HashMap<>();
-                    cart.setCartProducts(newMap);
-                    return newMap;
-                });
+        Map<UUID, Integer> cartProducts = cart.getCartProducts();
 
-        products.forEach((productId, quantity) -> {
+        if (cartProducts == null) {
+            cartProducts = new HashMap<>();
+            cart.setCartProducts(cartProducts);
+        }
+
+        for (Map.Entry<UUID, Integer> entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Integer quantity = entry.getValue();
+
             if (quantity <= 0) {
                 throw new IllegalArgumentException("Количество товара должно быть положительным");
             }
+
             cartProducts.merge(productId, quantity, Integer::sum);
-        });
+        }
 
         return mapper.mapToCartDto(cart);
     }
@@ -175,13 +172,13 @@ public class CartServiceImpl implements CartService {
                     (String.format("Корзина пользователя %s ДЕАКТИВИРОВАННА", username));
         }
 
+        validateCartHaveAllProduct(cart, List.of(quantityRequest.getProductId()));
+        checkAvailableProductsInWarehouse(cart.getCartId(),
+                Map.of(quantityRequest.getProductId(), quantityRequest.getNewQuantity()));
+
+        Map<UUID, Integer> cartProducts = cart.getCartProducts();
         UUID productId = quantityRequest.getProductId();
         int newQuantity = quantityRequest.getNewQuantity();
-
-        validateCartHaveAllProduct(cart, List.of(productId));
-        checkAvailableProductsInWarehouse(cart.getCartId(), Map.of(productId, newQuantity));
-        Map<UUID, Integer> cartProducts = Optional.ofNullable(cart.getCartProducts())
-                .orElseThrow(() -> new IllegalStateException("Корзина не инициализирована"));
 
         if (newQuantity <= 0) {
             cartProducts.remove(productId);
