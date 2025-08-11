@@ -1,5 +1,6 @@
 package ru.yandex.practicum.warehouse.service;
 
+import jakarta.ws.rs.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.interaction.api.dto.cart.ShoppingCartDto;
@@ -15,13 +16,16 @@ import ru.yandex.practicum.interaction.api.feign.client.store.StoreFeignClient;
 import ru.yandex.practicum.warehouse.mapper.AddressMapper;
 import ru.yandex.practicum.warehouse.mapper.WarehouseProductMapper;
 import ru.yandex.practicum.warehouse.model.Address;
+import ru.yandex.practicum.warehouse.model.Dimension;
 import ru.yandex.practicum.warehouse.model.WarehouseProduct;
 import ru.yandex.practicum.warehouse.repository.AddressRepository;
 import ru.yandex.practicum.warehouse.repository.WarehouseRepository;
 
 import java.security.SecureRandom;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -65,27 +69,47 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public BookedProductsDto checkQuantityProducts(ShoppingCartDto shoppingCartDto) {
-        Map<UUID, Integer> cartProducts = shoppingCartDto.getCartProducts();
+        if (shoppingCartDto == null) {
+            throw new IllegalArgumentException("DTO корзины не может быть null");
+        }
+
+        Map<UUID, Integer> cartProducts = Optional.ofNullable(shoppingCartDto.getCartProducts())
+                .orElseThrow(() -> new BadRequestException("Список продуктов в корзине пуст"));
+
         Set<UUID> cartProductIds = cartProducts.keySet();
+        List<WarehouseProduct> foundProducts = warehouseRepository.findAllById(cartProductIds);
 
-        Map<UUID, WarehouseProduct> warehouseProducts = warehouseRepository.findAllById(cartProductIds).stream()
-                .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
 
-        Set<UUID> productIds = warehouseProducts.keySet();
+        Set<UUID> foundProductIds = foundProducts.stream()
+                .map(WarehouseProduct::getProductId)
+                .collect(Collectors.toSet());
+
         cartProductIds.forEach(id -> {
-            if (!productIds.contains(id)) {
-                throw new NoSpecifiedProductInWarehouseException(String.format("Товара с ID = %s нет на складе", id));
+            if (!foundProductIds.contains(id)) {
+                throw new NoSpecifiedProductInWarehouseException(
+                        String.format("Товар с ID %s отсутствует на складе", id)
+                );
             }
         });
 
-        cartProducts.forEach((key, value) -> {
-            if (warehouseProducts.get(key).getQuantity() < value) {
-                throw new ProductInShoppingCartLowQuantityInWarehouse
-                        (String.format("Товара с ID = %s не хватает на складе", key));
+        Map<UUID, WarehouseProduct> warehouseProducts = foundProducts.stream()
+                .collect(Collectors.toMap(
+                        WarehouseProduct::getProductId,
+                        Function.identity(),
+                        (existing, replacement) -> existing
+                ));
+
+        cartProducts.forEach((productId, requestedQuantity) -> {
+            WarehouseProduct product = warehouseProducts.get(productId);
+            if (product.getQuantity() < requestedQuantity) {
+                throw new ProductInShoppingCartLowQuantityInWarehouse(
+                        String.format("Недостаточно товара %s на складе. Доступно: %d, Запрошено: %d",
+                                productId, product.getQuantity(), requestedQuantity)
+                );
             }
         });
 
-        return getBookedProducts(warehouseProducts.values(), cartProducts);
+        return getBookedProducts(foundProducts, cartProducts);
     }
 
     @Override
@@ -95,7 +119,6 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .orElseThrow(() -> new NoSpecifiedProductInWarehouseException
                         (String.format("Товара с ID = %s нeт на складе", addRequest.getProductId())));
         product.setQuantity(product.getQuantity() + addRequest.getQuantity());
-        updateProductQuantityInShoppingStore(product);
     }
 
     @Override
@@ -107,35 +130,27 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     private BookedProductsDto getBookedProducts(Collection<WarehouseProduct> productList,
                                                 Map<UUID, Integer> cartProducts) {
+
         return BookedProductsDto.builder()
-                .fragile(productList.stream().anyMatch(WarehouseProduct::getFragile))
+                .fragile(productList.stream()
+                        .anyMatch(p -> Boolean.TRUE.equals(p.getFragile())))
                 .deliveryWeight(productList.stream()
-                        .mapToDouble(p -> p.getWeight() * cartProducts.get(p.getProductId()))
+                        .mapToDouble(p -> {
+                            Double weight = p.getWeight();
+                            Integer quantity = cartProducts.get(p.getProductId());
+                            return (weight != null ? weight : 0.0) * (quantity != null ? quantity : 0);
+                        })
                         .sum())
                 .deliveryVolume(productList.stream()
-                        .mapToDouble(p ->
-                                p.getDimension().getWidth()
-                                        * p.getDimension().getHeight()
-                                        * p.getDimension().getDepth()
-                                        * cartProducts.get(p.getProductId()))
+                        .mapToDouble(p -> {
+                            Dimension dim = p.getDimension();
+                            Integer quantity = cartProducts.get(p.getProductId());
+                            return (dim != null ?
+                                    dim.getWidth() * dim.getHeight() * dim.getDepth() : 0.0)
+                                    * (quantity != null ? quantity : 0);
+                        })
                         .sum())
                 .build();
-    }
 
-    private void updateProductQuantityInShoppingStore(WarehouseProduct product) {
-        UUID productId = product.getProductId();
-        QuantityState quantityState;
-        Integer quantity = product.getQuantity();
-        if (quantity == 0) {
-            quantityState = QuantityState.ENDED;
-        } else if (quantity < 10) {
-            quantityState = QuantityState.ENOUGH;
-        } else if (quantity < 100) {
-            quantityState = QuantityState.FEW;
-        } else {
-            quantityState = QuantityState.MANY;
-        }
-        storeFeignClient.setProductQuantityState(productId, quantityState);
     }
-
 }
