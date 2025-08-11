@@ -18,6 +18,7 @@ import ru.yandex.practicum.shopping.cart.repository.ShoppingCartRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -40,9 +41,12 @@ public class CartServiceImpl implements CartService {
         return shoppingCartRepository.findByUsername(username)
                 .orElseGet(() -> {
 
+                    Map<UUID, Integer> initialProducts = new HashMap<>();
+
                     ShoppingCart cart = ShoppingCart.builder()
                             .username(username)
                             .status(ShoppingCartStatus.ACTIVE)
+                            .cartProducts(initialProducts)
                             .build();
                     shoppingCartRepository.save(cart);
 
@@ -102,6 +106,11 @@ public class CartServiceImpl implements CartService {
         checkUsernameForEmpty(username);
         ShoppingCart cart = getOrCreateCart(username);
         validateCartStatus(cart);
+
+        if (cart.getCartProducts() == null) {
+            cart.setCartProducts(new HashMap<>());
+        }
+
         validateCartProducts(cart.getCartProducts());
 
         return mapper.mapToCartDto(cart);
@@ -144,26 +153,23 @@ public class CartServiceImpl implements CartService {
 
         Map<UUID, Integer> cartProducts = cart.getCartProducts();
 
-        for (Map.Entry<UUID, Integer> entry : products.entrySet()) {
-            UUID productId = entry.getKey();
-            Integer quantity = entry.getValue();
-
-            if (quantity <= 0) {
-                throw new IllegalArgumentException("Количество товара должно быть положительным");
+        products.forEach((productId, quantity) -> {
+            if (productId == null) {
+                throw new IllegalArgumentException("ID продукта не может быть null");
             }
-
-            if (!cartProducts.containsKey(productId)) {
-                cartProducts.put(productId, quantity);
-            } else {
-
-                int currentQuantity = cartProducts.get(productId);
-                int newQuantity = currentQuantity + quantity;
-
-                cartProducts.put(productId, newQuantity);
+            if (quantity == null || quantity <= 0) {
+                throw new IllegalArgumentException(
+                        String.format("Неверное количество для продукта %s: %d", productId, quantity)
+                );
             }
+            cartProducts.merge(productId, quantity, Integer::sum);
+        });
+
+        ShoppingCartDto dto = mapper.mapToCartDto(cart);
+        if (dto.getCartProducts() == null) {
+            dto.setCartProducts(new HashMap<>());
         }
-
-        return mapper.mapToCartDto(cart);
+        return dto;
     }
 
     @Override
@@ -200,6 +206,9 @@ public class CartServiceImpl implements CartService {
         }
 
         ShoppingCart cart = getOrCreateCart(username);
+        if (cart.getCartProducts() == null) {
+            cart.setCartProducts(new HashMap<>());
+        }
 
         validateCartStatus(cart);
         validateCartHaveAllProduct(cart, List.of(quantityRequest.getProductId()));
@@ -216,7 +225,11 @@ public class CartServiceImpl implements CartService {
         } else {
             cartProducts.put(productId, newQuantity);
         }
+        ShoppingCartDto dto = mapper.mapToCartDto(cart);
+        if (dto.getCartProducts() == null) {
+            dto.setCartProducts(new HashMap<>());
+        }
 
-        return mapper.mapToCartDto(cart);
+        return dto;
     }
 }
