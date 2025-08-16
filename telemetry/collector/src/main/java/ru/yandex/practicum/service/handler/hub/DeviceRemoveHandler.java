@@ -1,38 +1,32 @@
 package ru.yandex.practicum.service.handler.hub;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceRemovedEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.kafka.KafkaEventProducer;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.hub.DeviceRemovedEvent;
-import ru.yandex.practicum.model.hub.HubEvent;
-import ru.yandex.practicum.model.hub.enums.HubEventType;
-import ru.yandex.practicum.kafka.KafkaEventProducer;
 
 @Component
-public class DeviceRemoveHandler extends BaseHubHandler<DeviceRemovedEventAvro> {
+public class DeviceRemoveHandler extends BaseHubHandler {
 
-    public DeviceRemoveHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames) {
-        super(producer, topicsNames);
+    public DeviceRemoveHandler(KafkaEventProducer producer) {
+        super(producer);
     }
 
     @Override
-    public HubEventType getMessageType() {
-        return HubEventType.DEVICE_REMOVED;
+    public HubEventProto.PayloadCase getMessageHubType() {
+        return HubEventProto.PayloadCase.DEVICE_REMOVED;
     }
 
-
     @Override
-    public DeviceRemovedEventAvro mapToAvro(HubEvent hubEvent) {
-        DeviceRemovedEvent deviceRemovedEvent = (DeviceRemovedEvent) hubEvent;
-        return DeviceRemovedEventAvro.newBuilder()
-                .setId(deviceRemovedEvent.getId())
+    public HubEventAvro toAvro(HubEventProto hubEvent) {
+        DeviceRemovedEventProto deviceRemovedEvent = hubEvent.getDeviceRemoved();
+
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEvent.getHubId())
+                .setTimestamp(mapTimestampToInstant(hubEvent))
+                .setPayload(new DeviceRemovedEventAvro(deviceRemovedEvent.getId()))
                 .build();
-    }
-
-    @Override
-    protected HubEventAvro mapToAvroHubEvent(HubEvent hubEvent) {
-        DeviceRemovedEventAvro avro =mapToAvro(hubEvent);
-        return buildHubEventAvro(hubEvent, avro);
     }
 }

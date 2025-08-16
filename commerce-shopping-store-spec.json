@@ -1,0 +1,635 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Smart Home Technologies API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:36135",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Витрина онлайн-магазина",
+      "description": "API для обеспечения работы витрины онлайн магазина"
+    }
+  ],
+  "paths": {
+    "/api/v1/shopping-store": {
+      "get": {
+        "tags": [
+          "Витрина онлайн-магазина"
+        ],
+        "description": "Получение списка товаров по типу в пагинированном виде",
+        "operationId": "getProducts",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Категория товара",
+              "enum": [
+                "LIGHTING",
+                "CONTROL",
+                "SENSORS"
+              ]
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Тип товаров для возврата страницы: Управление, Датчики и т.д.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "description": "Категория товара",
+                "enum": [
+                  "LIGHTING",
+                  "CONTROL",
+                  "SENSORS"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Очередная страница товаров в соответствии с типом",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Витрина онлайн-магазина"
+        ],
+        "description": "Создание нового товара в ассортименте",
+        "operationId": "createNewProduct",
+        "requestBody": {
+          "description": "Описательная часть вновь добавляемого товара в систему, например нового роутера и т.д.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Товар создан с присвоением соответствующего ID",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Витрина онлайн-магазина"
+        ],
+        "description": "Обновление товара в ассортименте, например уточнение описания, характеристик и т.д.",
+        "operationId": "updateProduct",
+        "requestBody": {
+          "description": "Описательная часть изменяемого товара в системе",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Товар обновлен, возвращается информация из БД",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка, товар по идентификатору в БД не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNotFoundException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shopping-store/removeProductFromStore": {
+      "post": {
+        "tags": [
+          "Витрина онлайн-магазина"
+        ],
+        "description": "Удалить товар из ассортимента магазина. Функция для менеджерского состава.",
+        "operationId": "removeProductFromStore",
+        "requestBody": {
+          "description": "Идентификатор товара в БД на удаление из ассортимента.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Признак успеха операции. true - если успешно, false - во всех остальных случаях",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка, товар по идентификатору в БД не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNotFoundException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shopping-store/quantityState": {
+      "post": {
+        "tags": [
+          "Витрина онлайн-магазина"
+        ],
+        "description": "Установка статуса по товару. API вызывается со стороны склада.",
+        "operationId": "setProductQuantityState",
+        "requestBody": {
+          "description": "Запрос на изменение статуса товара в магазине, например: \"Закончился\", \"Мало\" и т.д.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetProductQuantityStateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Статус успешно обновлен",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка, товар по идентификатору в БД не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNotFoundException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shopping-store/{productId}": {
+      "get": {
+        "tags": [
+          "Витрина онлайн-магазина"
+        ],
+        "description": "Получить сведения по товару из БД.",
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Идентификатор товара в БД.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Актуальный товар со всеми сведениями из БД",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ошибка, товар по идентификатору в БД не найден",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductNotFoundException"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProductCategory": {
+        "type": "string",
+        "description": "Категория товара",
+        "example": "DEVICE",
+        "enum": [
+          "LIGHTING",
+          "CONTROL",
+          "SENSORS"
+        ]
+      },
+      "ProductDto": {
+        "required": [
+          "description",
+          "price",
+          "productName",
+          "productState",
+          "quantityState"
+        ],
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Идентификатор товара в БД",
+            "format": "uuid",
+            "nullable": true,
+            "example": "53aa35c8-e659-44b2-882f-f6056e443c99"
+          },
+          "productName": {
+            "type": "string",
+            "description": "Наименование товара",
+            "example": "device_1"
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание товара",
+            "example": "Управляемый товар"
+          },
+          "imageSrc": {
+            "type": "string",
+            "description": "Ссылка на картинку во внешнем хранилище или SVG ",
+            "nullable": true,
+            "example": "image/src/device_1"
+          },
+          "quantityState": {
+            "$ref": "#/components/schemas/QuantityState"
+          },
+          "productState": {
+            "$ref": "#/components/schemas/ProductState"
+          },
+          "productCategory": {
+            "$ref": "#/components/schemas/ProductCategory"
+          },
+          "price": {
+            "minimum": 1,
+            "type": "number",
+            "description": "Цена товара",
+            "example": 123.12
+          }
+        },
+        "description": "Товар, продаваемый в интернет-магазине"
+      },
+      "ProductState": {
+        "type": "string",
+        "description": "Статус товара",
+        "example": "ACTIVE",
+        "enum": [
+          "ACTIVE",
+          "DEACTIVATE"
+        ]
+      },
+      "QuantityState": {
+        "type": "string",
+        "description": "Статус, перечисляющий состояние остатка как свойства товара",
+        "example": "ENDED",
+        "enum": [
+          "ENDED",
+          "FEW",
+          "ENOUGH",
+          "MANY"
+        ]
+      },
+      "ProductNotFoundException": {
+        "type": "object",
+        "properties": {
+          "cause": {
+            "type": "object",
+            "properties": {
+              "stackTrace": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "classLoaderName": {
+                      "type": "string"
+                    },
+                    "moduleName": {
+                      "type": "string"
+                    },
+                    "moduleVersion": {
+                      "type": "string"
+                    },
+                    "methodName": {
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "type": "string"
+                    },
+                    "lineNumber": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "className": {
+                      "type": "string"
+                    },
+                    "nativeMethod": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string"
+              },
+              "localizedMessage": {
+                "type": "string"
+              }
+            }
+          },
+          "stackTrace": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "classLoaderName": {
+                  "type": "string"
+                },
+                "moduleName": {
+                  "type": "string"
+                },
+                "moduleVersion": {
+                  "type": "string"
+                },
+                "methodName": {
+                  "type": "string"
+                },
+                "fileName": {
+                  "type": "string"
+                },
+                "lineNumber": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "className": {
+                  "type": "string"
+                },
+                "nativeMethod": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "httpStatus": {
+            "type": "string",
+            "enum": [
+              "100 CONTINUE",
+              "101 SWITCHING_PROTOCOLS",
+              "102 PROCESSING",
+              "103 EARLY_HINTS",
+              "103 CHECKPOINT",
+              "200 OK",
+              "201 CREATED",
+              "202 ACCEPTED",
+              "203 NON_AUTHORITATIVE_INFORMATION",
+              "204 NO_CONTENT",
+              "205 RESET_CONTENT",
+              "206 PARTIAL_CONTENT",
+              "207 MULTI_STATUS",
+              "208 ALREADY_REPORTED",
+              "226 IM_USED",
+              "300 MULTIPLE_CHOICES",
+              "301 MOVED_PERMANENTLY",
+              "302 FOUND",
+              "302 MOVED_TEMPORARILY",
+              "303 SEE_OTHER",
+              "304 NOT_MODIFIED",
+              "305 USE_PROXY",
+              "307 TEMPORARY_REDIRECT",
+              "308 PERMANENT_REDIRECT",
+              "400 BAD_REQUEST",
+              "401 UNAUTHORIZED",
+              "402 PAYMENT_REQUIRED",
+              "403 FORBIDDEN",
+              "404 NOT_FOUND",
+              "405 METHOD_NOT_ALLOWED",
+              "406 NOT_ACCEPTABLE",
+              "407 PROXY_AUTHENTICATION_REQUIRED",
+              "408 REQUEST_TIMEOUT",
+              "409 CONFLICT",
+              "410 GONE",
+              "411 LENGTH_REQUIRED",
+              "412 PRECONDITION_FAILED",
+              "413 PAYLOAD_TOO_LARGE",
+              "413 REQUEST_ENTITY_TOO_LARGE",
+              "414 URI_TOO_LONG",
+              "414 REQUEST_URI_TOO_LONG",
+              "415 UNSUPPORTED_MEDIA_TYPE",
+              "416 REQUESTED_RANGE_NOT_SATISFIABLE",
+              "417 EXPECTATION_FAILED",
+              "418 I_AM_A_TEAPOT",
+              "419 INSUFFICIENT_SPACE_ON_RESOURCE",
+              "420 METHOD_FAILURE",
+              "421 DESTINATION_LOCKED",
+              "422 UNPROCESSABLE_ENTITY",
+              "423 LOCKED",
+              "424 FAILED_DEPENDENCY",
+              "425 TOO_EARLY",
+              "426 UPGRADE_REQUIRED",
+              "428 PRECONDITION_REQUIRED",
+              "429 TOO_MANY_REQUESTS",
+              "431 REQUEST_HEADER_FIELDS_TOO_LARGE",
+              "451 UNAVAILABLE_FOR_LEGAL_REASONS",
+              "500 INTERNAL_SERVER_ERROR",
+              "501 NOT_IMPLEMENTED",
+              "502 BAD_GATEWAY",
+              "503 SERVICE_UNAVAILABLE",
+              "504 GATEWAY_TIMEOUT",
+              "505 HTTP_VERSION_NOT_SUPPORTED",
+              "506 VARIANT_ALSO_NEGOTIATES",
+              "507 INSUFFICIENT_STORAGE",
+              "508 LOOP_DETECTED",
+              "509 BANDWIDTH_LIMIT_EXCEEDED",
+              "510 NOT_EXTENDED",
+              "511 NETWORK_AUTHENTICATION_REQUIRED"
+            ]
+          },
+          "userMessage": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "suppressed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stackTrace": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "classLoaderName": {
+                        "type": "string"
+                      },
+                      "moduleName": {
+                        "type": "string"
+                      },
+                      "moduleVersion": {
+                        "type": "string"
+                      },
+                      "methodName": {
+                        "type": "string"
+                      },
+                      "fileName": {
+                        "type": "string"
+                      },
+                      "lineNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "className": {
+                        "type": "string"
+                      },
+                      "nativeMethod": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string"
+                },
+                "localizedMessage": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "localizedMessage": {
+            "type": "string"
+          }
+        }
+      },
+      "SetProductQuantityStateRequest": {
+        "required": [
+          "productId",
+          "quantityState"
+        ],
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "Идентификатор товара",
+            "format": "uuid"
+          },
+          "quantityState": {
+            "type": "string",
+            "description": "Статус, перечисляющий состояние остатка как свойства товара",
+            "enum": [
+              "ENDED",
+              "FEW",
+              "ENOUGH",
+              "MANY"
+            ]
+          }
+        },
+        "description": "Запрос на изменение статуса остатка товара"
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

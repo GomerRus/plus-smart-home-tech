@@ -1,39 +1,36 @@
 package ru.yandex.practicum.service.handler.sensor;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.MotionSensorProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.sensor.MotionSensorEvent;
-import ru.yandex.practicum.model.sensor.SensorEvent;
-import ru.yandex.practicum.model.sensor.enums.SensorEventType;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
 
 @Component
-public class MotionSensorHandler extends BaseSensorHandler<MotionSensorAvro> {
-
-    public MotionSensorHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames) {
-        super(producer, topicsNames);
+public class MotionSensorHandler extends BaseSensorHandler {
+    public MotionSensorHandler(KafkaEventProducer producer) {
+        super(producer);
     }
 
     @Override
-    public SensorEventType getMessageType() {
-        return SensorEventType.MOTION_SENSOR_EVENT;
+    public SensorEventProto.PayloadCase getMessageSensorType() {
+        return SensorEventProto.PayloadCase.MOTION_SENSOR_EVENT;
     }
 
     @Override
-    public MotionSensorAvro mapToAvro(SensorEvent sensorEvent) {
-        MotionSensorEvent motionSensorEvent = (MotionSensorEvent) sensorEvent;
-        return MotionSensorAvro.newBuilder()
-                .setLinkQuality(motionSensorEvent.getLinkQuality())
-                .setMotion(motionSensorEvent.getMotion())
-                .setVoltage(motionSensorEvent.getVoltage())
+    public SensorEventAvro toAvro(SensorEventProto sensorEvent) {
+        MotionSensorProto motionSensor = sensorEvent.getMotionSensorEvent();
+
+        return SensorEventAvro.newBuilder()
+                .setId(sensorEvent.getId())
+                .setHubId(sensorEvent.getHubId())
+                .setTimestamp(mapTimestampToInstant(sensorEvent))
+                .setPayload(MotionSensorAvro.newBuilder()
+                        .setMotion(motionSensor.getMotion())
+                        .setLinkQuality(motionSensor.getLinkQuality())
+                        .setVoltage(motionSensor.getVoltage())
+                        .build())
                 .build();
-    }
-
-    @Override
-    protected SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent) {
-        MotionSensorAvro avro = mapToAvro(sensorEvent);
-        return buildSensorEventAvro(sensorEvent, avro);
     }
 }

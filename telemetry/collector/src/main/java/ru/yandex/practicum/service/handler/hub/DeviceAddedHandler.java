@@ -1,51 +1,48 @@
 package ru.yandex.practicum.service.handler.hub;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceAddedEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceTypeProto;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.hub.DeviceAddedEvent;
-import ru.yandex.practicum.model.hub.HubEvent;
-import ru.yandex.practicum.model.hub.enums.DeviceType;
-import ru.yandex.practicum.model.hub.enums.HubEventType;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
 
 @Component
-public class DeviceAddedHandler extends BaseHubHandler<DeviceAddedEventAvro> {
-
-    public DeviceAddedHandler(KafkaEventProducer producer, KafkaTopicsNames topicsNames) {
-        super(producer, topicsNames);
+public class DeviceAddedHandler extends BaseHubHandler {
+    public DeviceAddedHandler(KafkaEventProducer producer) {
+        super(producer);
     }
 
     @Override
-    public HubEventType getMessageType() {
-        return HubEventType.DEVICE_ADDED;
+    public HubEventProto.PayloadCase getMessageHubType() {
+        return HubEventProto.PayloadCase.DEVICE_ADDED;
     }
 
     @Override
-    public DeviceAddedEventAvro mapToAvro(HubEvent hubEvent) {
-        DeviceAddedEvent deviceAddedEvent = (DeviceAddedEvent) hubEvent;
-        return DeviceAddedEventAvro.newBuilder()
-                .setId(deviceAddedEvent.getId())
-                .setType(mapToDeviceTypeAvro(deviceAddedEvent.getDeviceType()))
+    public HubEventAvro toAvro(HubEventProto hubEvent) {
+        DeviceAddedEventProto deviceAddedEvent = hubEvent.getDeviceAdded();
+
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEvent.getHubId())
+                .setTimestamp(mapTimestampToInstant(hubEvent))
+                .setPayload(new DeviceAddedEventAvro(deviceAddedEvent.getId(),
+                        mapToDeviceTypeAvro(deviceAddedEvent.getType())))
                 .build();
     }
 
-    @Override
-    protected HubEventAvro mapToAvroHubEvent(HubEvent hubEvent) {
-        DeviceAddedEventAvro avro = mapToAvro(hubEvent);
-        return buildHubEventAvro(hubEvent, avro);
-    }
+    private DeviceTypeAvro mapToDeviceTypeAvro(DeviceTypeProto deviceTypeProto) {
+        DeviceTypeAvro type = null;
 
-    private DeviceTypeAvro mapToDeviceTypeAvro(DeviceType deviceType) {
-        return switch (deviceType) {
-            case DeviceType.MOTION_SENSOR -> DeviceTypeAvro.MOTION_SENSOR;
-            case DeviceType.TEMPERATURE_SENSOR -> DeviceTypeAvro.TEMPERATURE_SENSOR;
-            case DeviceType.LIGHT_SENSOR -> DeviceTypeAvro.LIGHT_SENSOR;
-            case DeviceType.CLIMATE_SENSOR -> DeviceTypeAvro.CLIMATE_SENSOR;
-            case DeviceType.SWITCH_SENSOR -> DeviceTypeAvro.SWITCH_SENSOR;
+        switch (deviceTypeProto) {
+            case LIGHT_SENSOR -> type = DeviceTypeAvro.LIGHT_SENSOR;
+            case MOTION_SENSOR -> type = DeviceTypeAvro.MOTION_SENSOR;
+            case SWITCH_SENSOR -> type = DeviceTypeAvro.SWITCH_SENSOR;
+            case CLIMATE_SENSOR -> type = DeviceTypeAvro.CLIMATE_SENSOR;
+            case TEMPERATURE_SENSOR -> type = DeviceTypeAvro.TEMPERATURE_SENSOR;
+        }
 
-        };
+        return type;
     }
 }
