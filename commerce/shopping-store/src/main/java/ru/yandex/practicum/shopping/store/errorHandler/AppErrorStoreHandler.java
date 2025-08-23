@@ -25,20 +25,20 @@ public class AppErrorStoreHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppError handleValidationException(MethodArgumentNotValidException exp) {
         log.error("ОШИБКА VALIDATION-STORE", exp);
-        return new AppError("VALIDATION EXCEPTION" + exp.getMessage());
+        return new AppError("STORE-VALIDATION EXCEPTION" + exp.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppError handleConstraintViolations(ConstraintViolationException exp) {
         log.error("ОШИБКА CONSTRAINT-STORE", exp);
-        return new AppError("ОШИБКА ОГРАНИЧЕНИЙ CONSTRAINT " + exp.getMessage());
+        return new AppError("STORE-ОШИБКА ОГРАНИЧЕНИЙ CONSTRAINT " + exp.getMessage());
     }
 
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public AppError handleThrowable(Throwable exp) {
         log.error("ОШИБКА-STORE", exp);
-        return new AppError("INTERNAL SERVER ERROR " + exp.getMessage());
+        return new AppError("STORE-INTERNAL SERVER ERROR " + exp.getMessage());
     }
 }

@@ -14,9 +14,9 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingCartDto {
-    @NotNull
+    @NotNull(message = "cartId не может быть NULL.")
     UUID cartId;
 
-    @NotNull
+    @NotNull(message = "Таблица products не может быть NULL.")
     Map<UUID, @NotNull @Positive Integer> products;
 }

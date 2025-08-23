@@ -11,15 +11,15 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DimensionDto {
-    @NotNull
     @Min(1)
+    @NotNull(message = "width не может быть NULL.")
     Double width;
 
-    @NotNull
     @Min(1)
+    @NotNull(message = "height не может быть NULL.")
     Double height;
 
-    @NotNull
     @Min(1)
+    @NotNull(message = "depth не может быть NULL.")
     Double depth;
 }
