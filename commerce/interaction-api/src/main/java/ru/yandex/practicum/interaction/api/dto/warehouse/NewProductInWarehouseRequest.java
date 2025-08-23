@@ -13,15 +13,15 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewProductInWarehouseRequest {
-    @NotNull
+    @NotNull(message = "productId не может быть NULL.")
     UUID productId;
 
     Boolean fragile;
 
-    @NotNull
+    @NotNull(message = "dimension не может быть NULL.")
     DimensionDto dimension;
 
     @Min(1)
-    @NotNull
+    @NotNull(message = "weight не может быть NULL.")
     Double weight;
 }

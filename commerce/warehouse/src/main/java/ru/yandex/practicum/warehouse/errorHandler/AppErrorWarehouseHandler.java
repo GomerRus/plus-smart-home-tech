@@ -8,26 +8,37 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.interaction.api.exception.AppError;
+import ru.yandex.practicum.interaction.api.exception.AppErrorMultiple;
+import ru.yandex.practicum.interaction.api.exception.warehouse.MultipleProductsNotFoundException;
 import ru.yandex.practicum.interaction.api.exception.warehouse.NoSpecifiedProductInWarehouseException;
+import ru.yandex.practicum.interaction.api.exception.warehouse.OrderBookingNotFoundException;
 import ru.yandex.practicum.interaction.api.exception.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.interaction.api.exception.warehouse.ProductInShoppingCartNotInWarehouse;
 import ru.yandex.practicum.interaction.api.exception.warehouse.SpecifiedProductAlreadyInWarehouseException;
 
 @Slf4j
 @RestControllerAdvice
 public class AppErrorWarehouseHandler {
 
+    @ExceptionHandler(ProductInShoppingCartNotInWarehouse.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public AppError handleProductInShoppingCartNotInWarehouse(ProductInShoppingCartNotInWarehouse exp) {
+        log.warn(exp.getMessage(), exp);
+        return new AppError("ОШИБКА: ТОВАР ИЗ КОРЗИНЫ ОТСУСТВУЕТ НА СКЛАДЕ " + exp.getMessage());
+    }
+
     @ExceptionHandler(NoSpecifiedProductInWarehouseException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppError handleNoSpecifiedProductInWarehouseException(NoSpecifiedProductInWarehouseException exp) {
         log.warn(exp.getMessage(), exp);
-        return new AppError("ОШИБКА: НЕТ УКАЗАННЫХ ТОВАРОВ НА СЛАДЕ " + exp.getMessage());
+        return new AppError("ОШИБКА: НЕТ УКАЗАННЫХ ТОВАРОВ НА СКЛАДЕ " + exp.getMessage());
     }
 
     @ExceptionHandler(ProductInShoppingCartLowQuantityInWarehouse.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppError handleProductInShoppingCartLowQuantityInWarehouseException(ProductInShoppingCartLowQuantityInWarehouse exp) {
         log.warn(exp.getMessage(), exp);
-        return new AppError("ОШИБКА: НА СЛАДЕ МЕНЬШЕ ТОВАРА ЧЕМ В КОРЗИНЕ " + exp.getMessage());
+        return new AppError("ОШИБКА: НА СКЛАДЕ МЕНЬШЕ ТОВАРА ЧЕМ В КОРЗИНЕ " + exp.getMessage());
     }
 
     @ExceptionHandler(SpecifiedProductAlreadyInWarehouseException.class)
@@ -35,6 +46,24 @@ public class AppErrorWarehouseHandler {
     public AppError handleSpecifiedProductAlreadyInWarehouseException(SpecifiedProductAlreadyInWarehouseException exp) {
         log.warn(exp.getMessage(), exp);
         return new AppError("ОШИБКА: УКАЗАННЫЙ ТОВАР УЖЕ ЕСТЬ НА СКЛАДЕ " + exp.getMessage());
+    }
+
+    @ExceptionHandler(OrderBookingNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public AppError handleOrderBookingNotFoundException(OrderBookingNotFoundException exp) {
+        log.warn(exp.getMessage(), exp);
+        return new AppError("ОШИБКА: ДЛЯ УКАЗАННОГО ЗАКАЗА НЕТ БРОНИРОВАНИЯ НА СКЛАДЕ " + exp.getMessage());
+    }
+
+    @ExceptionHandler(MultipleProductsNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public AppErrorMultiple handleMultipleProductsNotFoundException(MultipleProductsNotFoundException exp) {
+        log.error("Ошибка при обновлении товаров: {}", exp.getMessage());
+        return new AppErrorMultiple(
+                "PRODUCTS_NOT_FOUND",
+                exp.getMessage(),
+                exp.getMissingProductIds()
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
