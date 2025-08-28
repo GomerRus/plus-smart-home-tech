@@ -83,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
                 .address(address)
                 .build();
 
-        return toDto(newOrder);
+        return toDto(orderRepository.save(newOrder));
     }
 
     @Override
@@ -130,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentId(paymentDto.getPaymentId());
         order.setState(OrderState.ON_PAYMENT);
 
-        return toDto(order);
+        return toDto(orderRepository.save(order));
     }
 
     @Override
@@ -138,7 +138,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto paymentOrderFailed(UUID orderId) {
         Order order = getOrderById(orderId);
         order.setState(OrderState.PAYMENT_FAILED);
-        return toDto(order);
+        return toDto(orderRepository.save(order));
     }
 
     @Override
@@ -172,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrderById(orderId);
         order.setState(OrderState.DELIVERY_FAILED);
 
-        return toDto(order);
+        return toDto(orderRepository.save(order));
     }
 
     @Override
@@ -181,7 +181,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrderById(orderId);
         order.setState(OrderState.COMPLETED);
 
-        return toDto(order);
+        return toDto(orderRepository.save(order));
     }
 
     @Override
@@ -232,7 +232,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ValidationException(String.format(
                     "ОШИБКА: Заказ с ID = %s отправить на сборку НЕ ВОЗМОЖНО. РЕШЕНИЕ: Создайте новый заказ.", orderId));
         }
-        return toDto(order);
+        return toDto(orderRepository.save(order));
     }
 
     @Override
@@ -241,6 +241,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrderById(orderId);
         order.setState(OrderState.ASSEMBLY_FAILED);
 
-        return toDto(order);
+        return toDto(orderRepository.save(order));
     }
 }

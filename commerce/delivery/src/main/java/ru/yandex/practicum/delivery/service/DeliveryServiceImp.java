@@ -78,9 +78,7 @@ public class DeliveryServiceImp implements DeliveryService {
         Address toAddress = delivery.getToAddress();
 
         double warehouseMarKup = 1.0;
-        if (fromAddress.toString().contains("ADDRESS_1")) {
-            warehouseMarKup = 1.0;
-        } else if (fromAddress.toString().contains("ADDRESS_2")) {
+        if (fromAddress.toString().contains("ADDRESS_2")) {
             warehouseMarKup = 2.0;
         }
         double deliveryCost = baseCost + (baseCost * warehouseMarKup);
