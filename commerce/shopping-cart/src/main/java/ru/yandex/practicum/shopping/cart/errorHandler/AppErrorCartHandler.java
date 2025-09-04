@@ -56,13 +56,13 @@ public class AppErrorCartHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public AppError handleConstraintViolations(ConstraintViolationException exp) {
         log.error("ОШИБКА CONSTRAINT-CART", exp);
-        return new AppError("ОШИБКА ОГРАНИЧЕНИЙ CONSTRAINT " + exp.getMessage());
+        return new AppError("CART-ОШИБКА ОГРАНИЧЕНИЙ CONSTRAINT " + exp.getMessage());
     }
 
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public AppError handleThrowable(Throwable exp) {
         log.error("ОШИБКА-CART", exp);
-        return new AppError("INTERNAL SERVER ERROR " + exp.getMessage());
+        return new AppError("CART-INTERNAL SERVER ERROR " + exp.getMessage());
     }
 }

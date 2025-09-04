@@ -1,0 +1,563 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Smart Home Technologies API",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:44989",
+            "description": "Generated server url"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Шлюз доставки",
+            "description": "API для расчёта, проведения доставки"
+        }
+    ],
+    "paths": {
+        "/api/v1/delivery": {
+            "put": {
+                "tags": [
+                    "Шлюз доставки"
+                ],
+                "description": "Создать новую доставку в БД.",
+                "operationId": "planDelivery",
+                "requestBody": {
+                    "description": "Доставка для сохранения.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeliveryDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Указанная заявка с присвоенным идентификатором",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeliveryDto"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/delivery/successful": {
+            "post": {
+                "tags": [
+                    "Шлюз доставки"
+                ],
+                "description": "Эмуляция успешной доставки товара.",
+                "operationId": "deliverySuccessful",
+                "requestBody": {
+                    "description": "Идентификатор заказа.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Не найдена доставка",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoDeliveryFoundException"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/delivery/picked": {
+            "post": {
+                "tags": [
+                    "Шлюз доставки"
+                ],
+                "description": "Эмуляция получения товара в доставку.",
+                "operationId": "deliveryPicked",
+                "requestBody": {
+                    "description": "Идентификатор заказа.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Не найдена доставка для выдачи",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoDeliveryFoundException"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/delivery/failed": {
+            "post": {
+                "tags": [
+                    "Шлюз доставки"
+                ],
+                "description": "Эмуляция неудачного вручения товара.",
+                "operationId": "deliveryFailed",
+                "requestBody": {
+                    "description": "Идентификатор заказа.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "404": {
+                        "description": "Не найдена доставка для сбоя",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoDeliveryFoundException"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/delivery/cost": {
+            "post": {
+                "tags": [
+                    "Шлюз доставки"
+                ],
+                "description": "Расчёт полной стоимости доставки заказа.",
+                "operationId": "deliveryCost",
+                "requestBody": {
+                    "description": "Заказ для расчёта.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Полная стоимость доставки заказа",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Не найдена доставка для расчёта",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NoDeliveryFoundException"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AddressDto": {
+                "type": "object",
+                "properties": {
+                    "country": {
+                        "type": "string",
+                        "description": "Страна."
+                    },
+                    "city": {
+                        "type": "string",
+                        "description": "Город."
+                    },
+                    "street": {
+                        "type": "string",
+                        "description": "Улица."
+                    },
+                    "house": {
+                        "type": "string",
+                        "description": "Дом."
+                    },
+                    "flat": {
+                        "type": "string",
+                        "description": "Квартира."
+                    }
+                },
+                "description": "Представление адреса в системе."
+            },
+            "DeliveryDto": {
+                "required": [
+                    "deliveryId",
+                    "deliveryState",
+                    "fromAddress",
+                    "orderId",
+                    "toAddress"
+                ],
+                "type": "object",
+                "properties": {
+                    "deliveryId": {
+                        "type": "string",
+                        "description": "Идентификатор доставки.",
+                        "format": "uuid"
+                    },
+                    "fromAddress": {
+                        "$ref": "#/components/schemas/AddressDto"
+                    },
+                    "toAddress": {
+                        "$ref": "#/components/schemas/AddressDto"
+                    },
+                    "orderId": {
+                        "type": "string",
+                        "description": "Идентификатор заказа.",
+                        "format": "uuid"
+                    },
+                    "deliveryState": {
+                        "$ref": "#/components/schemas/DeliveryState"
+                    }
+                }
+            },
+            "DeliveryState": {
+                "type": "string",
+                "description": "Статус доставки.",
+                "enum": [
+                    "CREATED",
+                    "IN_PROGRESS",
+                    "DELIVERED",
+                    "FAILED",
+                    "CANCELLED"
+                ]
+            },
+            "NoDeliveryFoundException": {
+                "type": "object",
+                "properties": {
+                    "cause": {
+                        "type": "object",
+                        "properties": {
+                            "stackTrace": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "classLoaderName": {
+                                            "type": "string"
+                                        },
+                                        "moduleName": {
+                                            "type": "string"
+                                        },
+                                        "moduleVersion": {
+                                            "type": "string"
+                                        },
+                                        "methodName": {
+                                            "type": "string"
+                                        },
+                                        "fileName": {
+                                            "type": "string"
+                                        },
+                                        "lineNumber": {
+                                            "type": "integer",
+                                            "format": "int32"
+                                        },
+                                        "className": {
+                                            "type": "string"
+                                        },
+                                        "nativeMethod": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "localizedMessage": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "stackTrace": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "classLoaderName": {
+                                    "type": "string"
+                                },
+                                "moduleName": {
+                                    "type": "string"
+                                },
+                                "moduleVersion": {
+                                    "type": "string"
+                                },
+                                "methodName": {
+                                    "type": "string"
+                                },
+                                "fileName": {
+                                    "type": "string"
+                                },
+                                "lineNumber": {
+                                    "type": "integer",
+                                    "format": "int32"
+                                },
+                                "className": {
+                                    "type": "string"
+                                },
+                                "nativeMethod": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "httpStatus": {
+                        "type": "string",
+                        "enum": [
+                            "100 CONTINUE",
+                            "101 SWITCHING_PROTOCOLS",
+                            "102 PROCESSING",
+                            "103 EARLY_HINTS",
+                            "103 CHECKPOINT",
+                            "200 OK",
+                            "201 CREATED",
+                            "202 ACCEPTED",
+                            "203 NON_AUTHORITATIVE_INFORMATION",
+                            "204 NO_CONTENT",
+                            "205 RESET_CONTENT",
+                            "206 PARTIAL_CONTENT",
+                            "207 MULTI_STATUS",
+                            "208 ALREADY_REPORTED",
+                            "226 IM_USED",
+                            "300 MULTIPLE_CHOICES",
+                            "301 MOVED_PERMANENTLY",
+                            "302 FOUND",
+                            "302 MOVED_TEMPORARILY",
+                            "303 SEE_OTHER",
+                            "304 NOT_MODIFIED",
+                            "305 USE_PROXY",
+                            "307 TEMPORARY_REDIRECT",
+                            "308 PERMANENT_REDIRECT",
+                            "400 BAD_REQUEST",
+                            "401 UNAUTHORIZED",
+                            "402 PAYMENT_REQUIRED",
+                            "403 FORBIDDEN",
+                            "404 NOT_FOUND",
+                            "405 METHOD_NOT_ALLOWED",
+                            "406 NOT_ACCEPTABLE",
+                            "407 PROXY_AUTHENTICATION_REQUIRED",
+                            "408 REQUEST_TIMEOUT",
+                            "409 CONFLICT",
+                            "410 GONE",
+                            "411 LENGTH_REQUIRED",
+                            "412 PRECONDITION_FAILED",
+                            "413 PAYLOAD_TOO_LARGE",
+                            "413 REQUEST_ENTITY_TOO_LARGE",
+                            "414 URI_TOO_LONG",
+                            "414 REQUEST_URI_TOO_LONG",
+                            "415 UNSUPPORTED_MEDIA_TYPE",
+                            "416 REQUESTED_RANGE_NOT_SATISFIABLE",
+                            "417 EXPECTATION_FAILED",
+                            "418 I_AM_A_TEAPOT",
+                            "419 INSUFFICIENT_SPACE_ON_RESOURCE",
+                            "420 METHOD_FAILURE",
+                            "421 DESTINATION_LOCKED",
+                            "422 UNPROCESSABLE_ENTITY",
+                            "423 LOCKED",
+                            "424 FAILED_DEPENDENCY",
+                            "425 TOO_EARLY",
+                            "426 UPGRADE_REQUIRED",
+                            "428 PRECONDITION_REQUIRED",
+                            "429 TOO_MANY_REQUESTS",
+                            "431 REQUEST_HEADER_FIELDS_TOO_LARGE",
+                            "451 UNAVAILABLE_FOR_LEGAL_REASONS",
+                            "500 INTERNAL_SERVER_ERROR",
+                            "501 NOT_IMPLEMENTED",
+                            "502 BAD_GATEWAY",
+                            "503 SERVICE_UNAVAILABLE",
+                            "504 GATEWAY_TIMEOUT",
+                            "505 HTTP_VERSION_NOT_SUPPORTED",
+                            "506 VARIANT_ALSO_NEGOTIATES",
+                            "507 INSUFFICIENT_STORAGE",
+                            "508 LOOP_DETECTED",
+                            "509 BANDWIDTH_LIMIT_EXCEEDED",
+                            "510 NOT_EXTENDED",
+                            "511 NETWORK_AUTHENTICATION_REQUIRED"
+                        ]
+                    },
+                    "userMessage": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "suppressed": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "stackTrace": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "classLoaderName": {
+                                                "type": "string"
+                                            },
+                                            "moduleName": {
+                                                "type": "string"
+                                            },
+                                            "moduleVersion": {
+                                                "type": "string"
+                                            },
+                                            "methodName": {
+                                                "type": "string"
+                                            },
+                                            "fileName": {
+                                                "type": "string"
+                                            },
+                                            "lineNumber": {
+                                                "type": "integer",
+                                                "format": "int32"
+                                            },
+                                            "className": {
+                                                "type": "string"
+                                            },
+                                            "nativeMethod": {
+                                                "type": "boolean"
+                                            }
+                                        }
+                                    }
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "localizedMessage": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "localizedMessage": {
+                        "type": "string"
+                    }
+                }
+            },
+            "OrderDto": {
+                "required": [
+                    "orderId",
+                    "products"
+                ],
+                "type": "object",
+                "properties": {
+                    "orderId": {
+                        "type": "string",
+                        "description": "Идентификатор заказа.",
+                        "format": "uuid"
+                    },
+                    "shoppingCartId": {
+                        "type": "string",
+                        "description": "Идентификатор корзины.",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "products": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "description": "Отображение идентификатора товара на отобранное количество.",
+                            "format": "int64"
+                        },
+                        "description": "Отображение идентификатора товара на отобранное количество."
+                    },
+                    "paymentId": {
+                        "type": "string",
+                        "description": "Идентификатор оплаты.",
+                        "format": "uuid"
+                    },
+                    "deliveryId": {
+                        "type": "string",
+                        "description": "Идентификатор доставки.",
+                        "format": "uuid"
+                    },
+                    "state": {
+                        "type": "string",
+                        "description": "Статус заказа.",
+                        "enum": [
+                            "NEW",
+                            "ON_PAYMENT",
+                            "ON_DELIVERY",
+                            "DONE",
+                            "DELIVERED",
+                            "ASSEMBLED",
+                            "PAID",
+                            "COMPLETED",
+                            "DELIVERY_FAILED",
+                            "ASSEMBLY_FAILED",
+                            "PAYMENT_FAILED",
+                            "PRODUCT_RETURNED",
+                            "CANCELED"
+                        ]
+                    },
+                    "deliveryWeight": {
+                        "type": "number",
+                        "description": "Общий вес доставки.",
+                        "format": "double"
+                    },
+                    "deliveryVolume": {
+                        "type": "number",
+                        "description": "Общий объём доставки.",
+                        "format": "double"
+                    },
+                    "fragile": {
+                        "type": "boolean",
+                        "description": "Признак хрупкости заказа."
+                    },
+                    "totalPrice": {
+                        "type": "number",
+                        "description": "Общая стоимость."
+                    },
+                    "deliveryPrice": {
+                        "type": "number",
+                        "description": "Стоимость доставки."
+                    },
+                    "productPrice": {
+                        "type": "number",
+                        "description": "Стоимость товаров в заказе."
+                    }
+                },
+                "description": "Представление заказа в системе."
+            }
+        }
+    }
+}

@@ -73,3 +73,33 @@ services:
       - POSTGRES_DB=smart-home-commerce-warehouse
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
+
+  commerce-delivery-db:
+    image: postgres:16.1
+    container_name: commerce-delivery-db
+    ports:
+      - "6436:5432"
+    environment:
+      - POSTGRES_DB=smart-home-commerce-delivery
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+
+  commerce-order-db:
+    image: postgres:16.1
+    container_name: commerce-order-db
+    ports:
+      - "6437:5432"
+    environment:
+      - POSTGRES_DB=smart-home-commerce-order
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+
+  commerce-payment-db:
+    image: postgres:16.1
+    container_name: commerce-payment-db
+    ports:
+      - "6438:5432"
+    environment:
+      - POSTGRES_DB=smart-home-commerce-payment
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
